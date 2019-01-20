@@ -1,0 +1,26 @@
+.nav a.active {
+    background-color: #FFEFD5;
+    color: white;
+}
+
+.nav {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid #555;
+    background-color: #FFDAB9;
+    float: left;
+}
+
+.nav a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+.nav a:hover {
+    background-color: #FFC0CB;
+}
