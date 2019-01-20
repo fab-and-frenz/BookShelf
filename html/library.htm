@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>BookShelf</title>
+        <title>BookShelf: Library</title>
     </head>
 
     <body>
@@ -10,7 +10,6 @@
                 HTTPRequest.onreadystatechange = function() {
                     if (HTTPRequest.readyState == 4 && HTTPRequest.status == 200) {
                         var books = JSON.parse(HTTPRequest.responseText);
-                        var a = document.createElement('a');
                         var table = document.getElementById("books");
                         var lastRow = null;
                         for (var i = 0; i < books.length; i++) {
@@ -20,6 +19,7 @@
                             }
                             var col = lastRow.insertCell(-1);
                             var img = new Image();
+                            var a = document.createElement('a');
                             img.src = "data:src/png;base64, " + books[i].cover;
                             a.appendChild(img);
                             a.href = "/read?id=" + books[i].id;
@@ -34,10 +34,38 @@
 
             }
 
+            window.onclick = function(event) {
+                if (!event.target.matches('.dropbtn)) {
+                    var dropdowns = document.getElementByClassName("dropdown-content");
+                    var i;
+                    for (i = 0; i < dropdowns.length; i++) {
+                        var openDropdown = dropdowns[i];
+                        if (openDropdoiwn.classList.contains('show')) {
+                            openDropdown.classList.remove('show');
+                        }
+                    }
+                }
+            }
+
             getBooks();
         </script>
-
-        <h1>Books</h1>
+        <h1><em>BookShelf</em></h1>
+        <div class="nav">
+            <ul>
+                <li><a href="/libray">Library</a></li>
+                <li><a href="/settings">Settings</a></li>
+            </ul>
+        </div>
+        <br />
+        <input type="text" placeholder="Search..">
+        
+        <div class="dropdown">
+            <button class="dropbtn">View:</button>
+            <div class="dropdown-content">
+                <a href="">GRID</a>
+                <a href="">LIST</a>
+            </div>
+        </div>
         <table id="books">
         </table>
     </body>
