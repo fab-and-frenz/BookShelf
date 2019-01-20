@@ -1,19 +1,21 @@
-.nav a.active {
-    background-color: #FFEFD5;
+.active {
     color: white;
 }
 
-.nav {
+ul {
     list-style-type: none;
     margin: 0;
     padding: 0;
     overflow: hidden;
     border: 1px solid #555;
-    background-color: #FFDAB9;
+    background-color: #8B4513;
+}
+
+li {
     float: left;
 }
 
-.nav a {
+li a {
     display: block;
     color: white;
     text-align: center;
@@ -21,6 +23,6 @@
     text-decoration: none;
 }
 
-.nav a:hover {
+li a:hover {
     background-color: #FFC0CB;
 }
