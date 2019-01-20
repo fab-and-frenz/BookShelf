@@ -26,6 +26,8 @@ func main() {
         }
     }
 
+    http.HandleFunc("/getpages", getPagesHandler)
+    http.HandleFunc("/read", readHandler)
     http.HandleFunc("/getbooks", getBooksHandler)
     http.HandleFunc("/library", libraryHandler)
     http.HandleFunc("/applysettings", applySettingsHandler)

@@ -13,12 +13,11 @@
                         for (var i = 0; i < pages.length; i++) {
                             var img = new Image();
                             img.src = "data:src/png;base64, " + pages[i];
-                            img.width = "80%";
-                            document.body.appenChild(img);
+                            document.body.appendChild(img);
                         }
                     }
                 }
-                HTTPRequest.open("GET", "/getpages", true);
+                HTTPRequest.open("GET", "/getpages?id=" + {{.Id}}, true);
                 HTTPRequest.send(null);
             }
 
