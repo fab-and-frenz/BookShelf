@@ -15,6 +15,7 @@ type Book struct {
     Contributors   string `json:"contributors"`
     Subjects       string `json:"subjects"`
     Cover        []byte   `json:"cover"`
+    Id             int    `json:"id"`
 }
 
 var(
@@ -35,7 +36,7 @@ func libraryHandler(res http.ResponseWriter, req *http.Request) {
 
 func getBooksHandler(res http.ResponseWriter, req *http.Request) {
     var books []Book
-    for _, path := range settings.Books {
+    for id, path := range settings.Books {
         pages, err := cbz.NewFromFile(path)
         if err != nil {
             res.WriteHeader(500)
@@ -45,6 +46,7 @@ func getBooksHandler(res http.ResponseWriter, req *http.Request) {
         book := Book {
             Type: "comic",
             Cover: pages[0],
+            Id: id,
         }
 
         books = append(books, book)
