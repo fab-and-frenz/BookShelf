@@ -10,6 +10,7 @@
                 HTTPRequest.onreadystatechange = function() {
                     if (HTTPRequest.readyState == 4 && HTTPRequest.status == 200) {
                         var books = JSON.parse(HTTPRequest.responseText);
+                        var a = document.createElement('a');
                         var table = document.getElementById("books");
                         var lastRow = null;
                         for (var i = 0; i < books.length; i++) {
@@ -20,11 +21,13 @@
                             var col = lastRow.insertCell(-1);
                             var img = new Image();
                             img.src = "data:src/png;base64, " + books[i].cover;
+                            a.appendChild(img);
+                            a.href = "/read?id=" + books[i].id;
                             img.width = 200;
-                            col.appendChild(img);
+                            col.appendChild(a);
                         }
-                    }
-                }
+                    }               
+            }
 
                 HTTPRequest.open("GET", "/getbooks", true);
                 HTTPRequest.send(null);
