@@ -27,6 +27,7 @@ func main() {
     }
 
     http.HandleFunc("/getbooks", getBooksHandler)
+    http.HandleFunc("/library", libraryHandler)
     http.HandleFunc("/applysettings", applySettingsHandler)
     http.HandleFunc("/settings", settingsHandler)
     log.Fatal(http.ListenAndServe(":8080", nil))

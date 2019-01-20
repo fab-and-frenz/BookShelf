@@ -4,6 +4,8 @@ import(
     "github.com/fabiocolacio/liblit/cbz"
     "net/http"
     "encoding/json"
+    "io/ioutil"
+    "log"
 )
 
 type Book struct {
@@ -13,6 +15,22 @@ type Book struct {
     Contributors   string `json:"contributors"`
     Subjects       string `json:"subjects"`
     Cover        []byte   `json:"cover"`
+}
+
+var(
+    libraryPage []byte
+)
+
+func init() {
+    var err error
+    libraryPage, err = ioutil.ReadFile("html/library.htm")
+    if err != nil {
+        log.Fatal("Failed to load library.htm")
+    }
+}
+
+func libraryHandler(res http.ResponseWriter, req *http.Request) {
+    res.Write(libraryPage)        
 }
 
 func getBooksHandler(res http.ResponseWriter, req *http.Request) {
