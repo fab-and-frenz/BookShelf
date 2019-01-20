@@ -3,8 +3,8 @@ package main
 import(
     "log"
     "net/http"
-    "io/ioutil"
     "encoding/json"
+    "io/ioutil"
 )
 
 type Settings struct {
