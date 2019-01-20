@@ -1,0 +1,37 @@
+<html>
+    <head>
+    <title>BookShelf</title>
+    </head>
+
+    <body>
+
+    <script>
+        //script is for Java Script
+        function addPath() {
+            var table = document.getElementById("paths"); //looks for the variable paths. 
+            //Use function to select any element in html
+        
+            var row = table.insertRow(-1); //makes new row at the end
+
+            var cell = row.insertCell(0); //Makes the td
+
+            cell.innerHTML = "<input type=\"text\">";
+        }
+
+    </script>
+
+    <h1>Settings</h1>
+    
+    <p>Choose path to books:</p>
+    
+    <table border="1" width="10%" id="paths">
+        <tr>
+            <td><input type="text"></td>
+        </tr>
+    </table>
+    
+    <button type="button" onClick="addPath()">Add row</button><br />
+    <button type="button">Apply</button>
+    
+    </body>
+</html>
