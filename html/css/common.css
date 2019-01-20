@@ -10,7 +10,7 @@
 
 .active {
     color: white;
-    }
+}
 
 ul {
     list-style-type: none;
@@ -36,3 +36,4 @@ li a {
 li a:hover {
     background-color: #FFC0CB;
 }
+
