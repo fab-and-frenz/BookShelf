@@ -1,6 +1,7 @@
 package main
 
 import(
+    "log"
     "net/http"
     "io/ioutil"
     "encoding/json"
@@ -30,7 +31,7 @@ func applySettingsHandler(res http.ResponseWriter, req *http.Request) {
         return
     }
 
-    err := json.Unmarshal(body, &settings)
+    err = json.Unmarshal(body, &settings)
     if err != nil {
         res.WriteHeader(500)
         return
