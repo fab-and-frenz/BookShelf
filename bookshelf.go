@@ -5,21 +5,8 @@ import(
     "os"
     "flag"
     "net/http"
-    "io/ioutil"
     "github.com/fab-and-frenz/bookshelf/util"
 )
-
-var(
-    settingsPage []byte
-)
-
-func init() {
-    var err error
-    settingsPage, err = ioutil.ReadFile("html/settings.htm")
-    if err != nil {
-        log.Fatal("Failed to read 'settings.htm':", err)
-    }
-}
 
 func main() {
     var configDir string
@@ -39,11 +26,8 @@ func main() {
         }
     }
 
-    http.HandleFunc("/settings", SettingsHandler)
+    http.HandleFunc("/applysettings", applySettingsHandler)
+    http.HandleFunc("/settings", settingsHandler)
     log.Fatal(http.ListenAndServe(":8080", nil))
-}
-
-func SettingsHandler(res http.ResponseWriter, req *http.Request) {
-    res.Write(settingsPage)
 }
 
