@@ -18,6 +18,25 @@
             cell.innerHTML = "<input type=\"text\">";
         }
 
+        function sendPaths() {
+            var settings = {};
+            var table = document.getElementById("paths");
+            var rows = table.rows.length;
+            //Iterate through the table and store the cells in an array
+            var i = 0;
+            var hold = [];
+            for (var i = 0; i < rows; i++) {
+                var col = table.rows[i].cells.length;
+                hold.push(table.rows[i].cells[0].firstChild.value);
+            }
+            settings.books = hold;
+            stringPaths = JSON.stringify(settings);
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/applysettings", true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(stringPaths);
+        }
+
     </script>
 
     <h1>Settings</h1>
@@ -31,7 +50,7 @@
     </table>
     
     <button type="button" onClick="addPath()">Add row</button><br />
-    <button type="button">Apply</button>
+    <button type="button" onClick="sendPaths()">Apply</button>
     
     </body>
 </html>
