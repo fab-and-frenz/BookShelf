@@ -1,0 +1,39 @@
+<html>
+    <head>
+        <title>BookShelf</title>
+    </head>
+
+    <body>
+        <script>
+            function getPages() {
+                var HTTPRequest = new XMLHttpRequest();
+                HTTPRequest.onreadystatechange = function() {
+                    if (HTTPRequest.readyState == 4 && HTTPRequest.status == 200) {
+                        var pages = JSON.parse(HTTPRequest.responseText);
+                        for (var i = 0; i < pages.length; i++) {
+                            var img = new Image();
+                            img.src = "data:src/png;base64, " + pages[i];
+                            img.width = "80%";
+                            document.body.appenChild(img);
+                        }
+                    }
+                }
+                HTTPRequest.open("GET", "/getpages", true);
+                HTTPRequest.send(null);
+            }
+
+            getPages();
+        </script>
+        
+        <h1><em>BookShelf</em></h1>
+        <div class="nav">
+            <ul>
+                <li><a href="/library">Library</a></li>
+                <li><a href="/settings">Settings</a></li>
+            </ul>
+        </div>
+        <br />
+
+
+    </body>
+</html>
