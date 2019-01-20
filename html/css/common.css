@@ -1,0 +1,10 @@
+
+@font-face {
+    font-family: PlexSerif;
+    src: url("IBMPlexSerif-Regular.ttf")
+}
+
+* {
+    font-family: PlexSerif, serif;
+}
+
