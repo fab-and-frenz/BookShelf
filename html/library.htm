@@ -1,0 +1,24 @@
+<html>
+    <head>
+        <title>BookShelf</title>
+    </head>
+
+    <body>
+        <script>
+            function getPaths() {
+                var HTTPRequest = new XMLHttpRequest();
+                HTTPRequest.onreadystatechange = function() {
+                    if (HTTPRequest.readystate == 4 && HTTPRequest.status == 200) {
+                        console.log(JSON.parse(HTTPRequest.respondtext));
+                    }
+                }
+                //JSON.parse(); // STring turns to object
+
+            }
+        </script>
+
+        <h1>Books</h1>
+        <table id="books">
+        </table>
+    </body>
+</html>
