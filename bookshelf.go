@@ -4,6 +4,7 @@ import(
     "log"
     "os"
     "flag"
+    "io/ioutil"
     "net/http"
     "github.com/fab-and-frenz/bookshelf/util"
 )
@@ -25,6 +26,16 @@ func main() {
             return
         }
     }
+
+    http.HandleFunc("/html/", func (res http.ResponseWriter, req *http.Request) {
+        data, err := ioutil.ReadFile(req.URL.String())
+        if err != nil {
+            res.WriteHeader(400)
+            return
+        }
+
+        res.Write(data)
+    })
 
     http.HandleFunc("/getpages", getPagesHandler)
     http.HandleFunc("/read", readHandler)
