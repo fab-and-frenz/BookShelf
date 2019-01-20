@@ -28,9 +28,10 @@ func main() {
     }
 
     http.HandleFunc("/html/", func (res http.ResponseWriter, req *http.Request) {
-        data, err := ioutil.ReadFile(req.URL.String())
+        data, err := ioutil.ReadFile(req.URL.String()[1:])
         if err != nil {
-            res.WriteHeader(400)
+           log.Println(err)
+           res.WriteHeader(400)
             return
         }
 
