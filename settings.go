@@ -3,6 +3,7 @@ package main
 import(
     "log"
     "net/http"
+    "path/filepath"
     "encoding/json"
     "io/ioutil"
 )
@@ -28,16 +29,21 @@ func applySettingsHandler(res http.ResponseWriter, req *http.Request) {
     body, err := ioutil.ReadAll(req.Body)
     if err != nil {
         res.WriteHeader(500)
+        log.Println("Failed to read request body:", err)
         return
     }
 
-    err = json.Unmarshal(body, &settings)
-    if err != nil {
+    if err = json.Unmarshal(body, &settings); err != nil {
         res.WriteHeader(500)
+        log.Println("Failed to unmarshal settings JSON:", err)
         return
     }
 
-    log.Println(settings)
+    if err = ioutil.WriteFile(filepath.Join(configDir, settingsFile), body, 0666); err != nil {
+        res.WriteHeader(500)
+        log.Println("Failed to save settings file:", err)
+        return
+    }
 }
 
 func settingsHandler(res http.ResponseWriter, req *http.Request) {
