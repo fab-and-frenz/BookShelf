@@ -5,6 +5,7 @@ import(
     "net/http"
     "path/filepath"
     "encoding/json"
+    "html/template"
     "io/ioutil"
 )
 
@@ -47,6 +48,15 @@ func applySettingsHandler(res http.ResponseWriter, req *http.Request) {
 }
 
 func settingsHandler(res http.ResponseWriter, req *http.Request) {
-    res.Write(settingsPage)
+    tmpl, err := template.New("settings").Parse(string(settingsPage))
+    if err != nil {
+        log.Println("Failed to parse settings!")
+        res.Write(settingsPage)
+    }
+
+    if err = tmpl.Execute(res, settings.Books); err != nil {
+        log.Println("Failed to execute settings template!")
+        res.Write(settingsPage)
+    }
 }
 
