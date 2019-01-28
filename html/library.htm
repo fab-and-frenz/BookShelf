@@ -5,39 +5,6 @@
     </head>
 
     <body>
-        <script>
-            function getBooks() {
-                var HTTPRequest = new XMLHttpRequest();
-                HTTPRequest.onreadystatechange = function() {
-                    if (HTTPRequest.readyState == 4 && HTTPRequest.status == 200) {
-                        var books = JSON.parse(HTTPRequest.responseText);
-                        var table = document.getElementById("books");
-                        var lastRow = null;
-                        for (var i = 0; i < books.length; i++) {
-                            if (i % 5 == 0 || i == 0) {
-                               lastRow = table.insertRow(-1);
-                               colIndex = 0;
-                            }
-                            var col = lastRow.insertCell(-1);
-                            var img = new Image();
-                            var a = document.createElement('a');
-                            img.src = "data:src/png;base64, " + books[i].cover;
-                            a.appendChild(img);
-                            a.href = "/read?id=" + books[i].id;
-                            img.width = 200;
-                            col.appendChild(a);
-                        }
-                    }               
-               }
-
-                HTTPRequest.open("GET", "/getbooks", true);
-                HTTPRequest.send(null);
-
-            }
-
-
-            getBooks();
-        </script>
         <h1><em>BookShelf</em></h1>
         <ul>
             <li><a href="/library">Library</a></li>
@@ -46,14 +13,24 @@
         <br />
         <input type="text" placeholder="Search..">
         
- <!--   <div class="dropdown">
+        <!--
+        <div class="dropdown">
             <button class="dropbtn">View:</button>
             <div class="dropdown-content">
                 <a href="">GRID</a>
                 <a href="">LIST</a>
             </div>
-        </div>-->
+        </div>
+        -->
+        
         <table id="books">
+            {{if .}}
+                {{range .}}
+                    <tr><td><a href="/read?id={{.Id}}">
+                        <img width="200" src="data:src/png;base64, {{.Cover}}"/>
+                    </a></td></tr>
+                {{end}}
+            {{end}}
         </table>
     </body>
 </html>

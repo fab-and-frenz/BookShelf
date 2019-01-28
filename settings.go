@@ -14,17 +14,8 @@ type Settings struct {
 }
 
 var(
-    settingsPage []byte
     settings Settings
 )
-
-func init() {
-    var err error
-    settingsPage, err = ioutil.ReadFile("html/settings.htm")
-    if err != nil {
-        log.Fatal("Failed to read 'settings.htm':", err)
-    }
-}
 
 func applySettingsHandler(res http.ResponseWriter, req *http.Request) {
     body, err := ioutil.ReadAll(req.Body)
@@ -48,15 +39,13 @@ func applySettingsHandler(res http.ResponseWriter, req *http.Request) {
 }
 
 func settingsHandler(res http.ResponseWriter, req *http.Request) {
-    tmpl, err := template.New("settings").Parse(string(settingsPage))
+    tmpl, err := template.ParseFiles("html/settings.htm")
     if err != nil {
         log.Println("Failed to parse settings!")
-        res.Write(settingsPage)
     }
 
     if err = tmpl.Execute(res, settings.Books); err != nil {
         log.Println("Failed to execute settings template!")
-        res.Write(settingsPage)
     }
 }
 
