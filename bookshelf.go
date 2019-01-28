@@ -49,14 +49,17 @@ func main() {
            res.WriteHeader(400)
             return
         }
-
         res.Write(data)
     })
 
+    http.HandleFunc("/download", downloadHandler)
     http.HandleFunc("/read", readHandler)
     http.HandleFunc("/library", libraryHandler)
     http.HandleFunc("/applysettings", applySettingsHandler)
     http.HandleFunc("/settings", settingsHandler)
+
+    http.HandleFunc("/", libraryHandler)
+
     log.Fatal(http.ListenAndServe(":8080", nil))
 }
 

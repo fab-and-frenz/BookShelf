@@ -25,11 +25,12 @@
             <li><a href="/library">Library</a></li>
             <li><a href="/settings">Settings</a></li>
         </ul>
+
         <br />
-            {{if .}}
-                {{range .}}
-                    <img class="page" src="data:src/png;base64, {{.}}" />
-                {{end}}
+        {{if .}}
+            {{range .}}
+                <img class="page" src="data:src/png;base64, {{.}}" />
             {{end}}
+        {{end}}
     </body>
 </html>

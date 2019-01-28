@@ -5,11 +5,13 @@ import(
     "net/http"
     "encoding/base64"
     "html/template"
+    pth "path"
     "log"
 )
 
 type Book struct {
     Type           string `json:"type"`
+    Filename       string `json:"filename"`
     Title          string `json:"title"`
     Author         string `json:"author"`
     Contributors   string `json:"contributors"`
@@ -37,6 +39,8 @@ func libraryHandler(res http.ResponseWriter, req *http.Request) {
 
         book := Book {
             Type: "comic",
+            Title: pth.Base(path),
+            Filename: pth.Base(path),
             Cover: base64.StdEncoding.EncodeToString(pages[0]),
             Id: id,
         }
