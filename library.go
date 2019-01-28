@@ -30,18 +30,23 @@ func libraryHandler(res http.ResponseWriter, req *http.Request) {
 
     var books []Book
     for id, path := range settings.Books {
-        pages, err := cbz.NewFromFile(path)
-        if err != nil {
-            res.WriteHeader(500)
-            log.Println(err)
-            return
+        var cover []byte
+        
+        if pth.Ext(path) == ".cbz" {
+            pages, err := cbz.NewFromFile(path)
+            if err != nil {
+                res.WriteHeader(500)
+                log.Println(err)
+                return
+            }
+            cover = pages[0]
         }
 
         book := Book {
             Type: "comic",
             Title: pth.Base(path),
             Filename: pth.Base(path),
-            Cover: base64.StdEncoding.EncodeToString(pages[0]),
+            Cover: base64.StdEncoding.EncodeToString(cover),
             Id: id,
         }
 
