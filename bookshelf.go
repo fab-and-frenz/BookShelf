@@ -53,9 +53,7 @@ func main() {
         res.Write(data)
     })
 
-    http.HandleFunc("/getpages", getPagesHandler)
     http.HandleFunc("/read", readHandler)
-    http.HandleFunc("/getbooks", getBooksHandler)
     http.HandleFunc("/library", libraryHandler)
     http.HandleFunc("/applysettings", applySettingsHandler)
     http.HandleFunc("/settings", settingsHandler)
