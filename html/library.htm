@@ -33,7 +33,7 @@
             {{if .}}
                 {{range .}}
                     <tr>
-                        <td><a href="/read?id={{.Id}}">{{.Title}}</a></td>
+                        <td><a href="/read?id={{.Id}}&type={{.Type}}">{{.Title}}</a></td>
                         <td><a>{{.Author}}</a></td>
                         <td><a href="/download?id={{.Id}}" download="{{.Filename}}">Download</a></td>
                     </tr>

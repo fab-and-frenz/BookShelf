@@ -9,8 +9,14 @@ import(
     "log"
 )
 
+const (
+    Cbz = iota
+    Epub
+    Pdf
+)
+
 type Book struct {
-    Type           string `json:"type"`
+    Type           int    `json:"type"`
     Filename       string `json:"filename"`
     Title          string `json:"title"`
     Author         string `json:"author"`
@@ -30,25 +36,30 @@ func libraryHandler(res http.ResponseWriter, req *http.Request) {
 
     var books []Book
     for id, path := range settings.Books {
-        var cover []byte
-        
+        var book Book
+       
         if pth.Ext(path) == ".cbz" {
+            book.Type = Cbz
             pages, err := cbz.NewFromFile(path)
             if err != nil {
                 res.WriteHeader(500)
                 log.Println(err)
                 return
             }
-            cover = pages[0]
+            book.Cover = base64.StdEncoding.EncodeToString(pages[0])
         }
 
-        book := Book {
-            Type: "comic",
-            Title: pth.Base(path),
-            Filename: pth.Base(path),
-            Cover: base64.StdEncoding.EncodeToString(cover),
-            Id: id,
+        if pth.Ext(path) == ".pdf" {
+            book.Type = Pdf
         }
+
+        if pth.Ext(path) == ".epub" {
+            book.Type = Epub
+        }
+
+        book.Title =  pth.Base(path)
+        book.Filename = pth.Base(path)
+        book.Id = id
 
         books = append(books, book)
     }
