@@ -19,27 +19,6 @@
                 margin-bottom: 10px;
             }
         </style>
-
-        <script>
-            function getPages() {
-                var HTTPRequest = new XMLHttpRequest();
-                HTTPRequest.onreadystatechange = function() {
-                    if (HTTPRequest.readyState == 4 && HTTPRequest.status == 200) {
-                        var pages = JSON.parse(HTTPRequest.responseText);
-                        for (var i = 0; i < pages.length; i++) {
-                            var img = new Image();
-                            img.src = "data:src/png;base64, " + pages[i];
-                            img.setAttribute("class", "page");
-                            document.body.appendChild(img);
-                        }
-                    }
-                }
-                HTTPRequest.open("GET", "/getpages?id=" + {{.Id}}, true);
-                HTTPRequest.send(null);
-            }
-
-            getPages();
-        </script>
         
         <h1><em>BookShelf</em></h1>
         <ul>
@@ -47,7 +26,14 @@
             <li><a href="/settings">Settings</a></li>
         </ul>
         <br />
-
+    
+            {{block "list" .}}
+                {{if .}}
+                    {{range .}}
+                        <img class="page" src="data:src/png;base64, {{println .}}" />
+                    {{end}}
+                {{end}}
+            {{end}}
 
     </body>
 </html>

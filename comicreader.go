@@ -3,6 +3,8 @@ package main
 import(
     "net/http"
     "strconv"
+    "log"
+    "encoding/base64"
     "encoding/json"
     "html/template"
     "github.com/fabiocolacio/liblit/cbz"
@@ -18,12 +20,32 @@ func readHandler(res http.ResponseWriter, req *http.Request) {
     t, err := template.ParseFiles("html/view.htm")
     if err != nil {
         res.WriteHeader(500)
+        log.Println(err)
         return
     }
 
-    idStruct := struct{ Id int }{ Id: id }
+    if id >= len(settings.Books) {
+        res.WriteHeader(400)
+        log.Println(err)
+        return
+    }
 
-    t.Execute(res, idStruct)
+    path := settings.Books[id]
+
+    pages, err := cbz.NewFromFile(path)
+    if err != nil {
+        res.WriteHeader(500)
+        return
+    }
+
+    b64Pages := make([]string, len(pages))
+    for i, page := range pages {
+        b64Pages[i] = base64.StdEncoding.EncodeToString(page)
+    }
+
+    if err = t.Execute(res, b64Pages); err != nil {
+        log.Println(err)
+    }
 }
 
 func getPagesHandler(res http.ResponseWriter, req *http.Request) {
