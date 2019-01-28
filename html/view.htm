@@ -26,14 +26,10 @@
             <li><a href="/settings">Settings</a></li>
         </ul>
         <br />
-    
-            {{block "list" .}}
-                {{if .}}
-                    {{range .}}
-                        <img class="page" src="data:src/png;base64, {{println .}}" />
-                    {{end}}
+            {{if .}}
+                {{range .}}
+                    <img class="page" src="data:src/png;base64, {{.}}" />
                 {{end}}
             {{end}}
-
     </body>
 </html>

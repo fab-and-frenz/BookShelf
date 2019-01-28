@@ -51,11 +51,9 @@
     
     <table border="1" id="paths">
         <tr>
-            {{block "list" .}}
-                {{if .}}
-                    {{range .}}
-                        <tr><td><input type="text" value="{{println .}}" /></td></tr>
-                    {{end}}
+            {{if .}}
+                {{range .}}
+                    <tr><td><input type="text" value="{{.}}" /></td></tr>
                 {{end}}
             {{end}}
         </tr>
