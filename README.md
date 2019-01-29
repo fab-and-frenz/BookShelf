@@ -23,7 +23,7 @@ Everything listed in the table is planned to be added in the future.
 You may request other formats by opening an issue in Github!
 
 Format | Viewing | Annotations
-------------------------------
+-------|---------|------------
 Cbz    | yes     | no
 Cbt    | no      | no
 Cbr    | no      | no
