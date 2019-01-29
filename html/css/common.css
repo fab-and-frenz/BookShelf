@@ -1,11 +1,21 @@
 
 @font-face {
     font-family: PlexSerif;
-    src: url("IBMPlexSerif-Regular.ttf")
+    src: url("IBMPlexSerif-Regular.ttf");
+}
+
+@font-face {
+    font-family: FiraBook;
+    src: url("FiraSans-Book.ttf");
+}
+
+@font-face {
+    font-family: FiraSans;
+    src: url("FiraSans-Regular.ttf");
 }
 
 * {
-    font-family: PlexSerif, serif;
+    font-family: FiraSans;
 }
 
 .active {
