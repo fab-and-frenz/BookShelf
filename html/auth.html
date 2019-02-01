@@ -1,0 +1,24 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+
+        <title>BookShelf: Login</title>
+    </head>
+    <body>
+        <h1>{{.}}</h1>
+
+        <form method="POST" action="/registeruser">
+            <label for="userinput">Username:</label>
+            <input id="userinput" type="text" name="username"/>
+            <br/>
+
+            <label for="passinput">Password:</label>
+            <input id="passinput" type="password" name="password"/>
+            <br/>
+
+            <input type="submit" value="{{.}}"/>
+        </form>
+    </body>
+</html>
+
