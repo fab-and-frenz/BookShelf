@@ -7,10 +7,11 @@ import(
 )
 
 func main() {
-    http.HandleFunc("/html/", htmlHandler)
-    http.HandleFunc("/register", registerPageHandler)
+    http.HandleFunc("/html/",        htmlHandler)
+    http.HandleFunc("/register",     registerPageHandler)
     http.HandleFunc("/registeruser", registerUserHandler)
-    http.HandleFunc("/login", loginPageHandler)
+    http.HandleFunc("/login",        loginPageHandler)
+    http.HandleFunc("/loginuser",    loginUserHandler)
 
     log.Fatal(http.ListenAndServe(":8080", nil))
 }

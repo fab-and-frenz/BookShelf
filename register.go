@@ -10,9 +10,9 @@ import(
 )
 
 type User struct {
-    Username     string
-    Salt       []byte
-    SaltedHash []byte
+    Username     string `bson:"username" json:"saltedhash"`
+    Salt       []byte   `bson:"salt" json:"saltedhash"`
+    SaltedHash []byte   `bson:"saltedhash" json:"saltedhash"`
 }
 
 const(
@@ -35,7 +35,8 @@ func registerPageHandler(res http.ResponseWriter, req *http.Request) {
         return
     }
 
-    if err = t.Execute(res, "Register"); err != nil {
+    vals := struct{ Action, Name string }{ "/registeruser", "Register" }
+    if err = t.Execute(res, vals); err != nil {
         log.Println(err)
         return
     }

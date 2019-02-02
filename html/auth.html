@@ -6,9 +6,9 @@
         <title>BookShelf: Login</title>
     </head>
     <body>
-        <h1>{{.}}</h1>
+        <h1>{{.Name}}</h1>
 
-        <form method="POST" action="/registeruser">
+        <form method="POST" action="{{.Action}}">
             <label for="userinput">Username:</label>
             <input id="userinput" type="text" name="username"/>
             <br/>
@@ -17,7 +17,7 @@
             <input id="passinput" type="password" name="password"/>
             <br/>
 
-            <input type="submit" value="{{.}}"/>
+            <input type="submit" value="{{.Name}}"/>
         </form>
     </body>
 </html>
