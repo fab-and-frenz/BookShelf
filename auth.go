@@ -135,9 +135,15 @@ func loginUserHandler(res http.ResponseWriter, req *http.Request) {
     }
 
     if subtle.ConstantTimeCompare(saltedHash, user.SaltedHash) == 1 {
+        jwt, err := createJWT(username, hmacKey)
+        if err != nil {
+            res.WriteHeader(500)
+            res.Write([]byte("Failed to login"))
+        }
+
         cookie := http.Cookie {
             Name: "session",
-            Value: username,
+            Value: jwt,
             Secure: true,
             SameSite: 1,
             Path: "/",
