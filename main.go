@@ -33,11 +33,13 @@ func main() {
     }
 
     httpsMux := http.NewServeMux()
-    httpsMux.HandleFunc("/html/",        htmlHandler)
-    httpsMux.HandleFunc("/register",     registerPageHandler)
-    httpsMux.HandleFunc("/registeruser", registerUserHandler)
-    httpsMux.HandleFunc("/login",        loginPageHandler)
-    httpsMux.HandleFunc("/loginuser",    loginUserHandler)
+
+    httpsMux.HandleFunc( "/html/",        htmlHandler         )
+    httpsMux.HandleFunc( "/register",     registerPageHandler )
+    httpsMux.HandleFunc( "/registeruser", registerUserHandler )
+    httpsMux.HandleFunc( "/login",        loginPageHandler    )
+    httpsMux.HandleFunc( "/loginuser",    loginUserHandler    )
+    httpsMux.HandleFunc( "/library",      libraryHandler      )
 
     httpsHandler := http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
         res.Header().Add("Strict-Transport-Security", "max-age=31536000; includeSubDomains")

@@ -7,6 +7,7 @@ import(
     "html/template"
     "log"
     "errors"
+    "bytes"
     "time"
     "crypto/sha256"
     "crypto/subtle"
@@ -27,7 +28,7 @@ var(
 )
 
 func init() {
-    hmacKey := make([]byte, 32)
+    hmacKey = make([]byte, 32)
     if _, err := rand.Read(hmacKey); err != nil {
         log.Fatal(err)
     }
@@ -155,13 +156,15 @@ func loginUserHandler(res http.ResponseWriter, req *http.Request) {
         }
 
         http.SetCookie(res, &cookie)
-        res.Write([]byte("login successful"))
+        http.Redirect(res, req, "/library", 302)
     } else {
         res.WriteHeader(400)
         res.Write([]byte("Invalid username or password."))
     }
 }
 
+// unwrapJWT checks if a JWT is valid (unexpired, and distributed by the server),
+// and returns the payload as a JWT structure if it is valid.
 func unwrapJWT(jwt, hmacKey []byte) (JWT, error) {
     var ret JWT
 
@@ -183,6 +186,8 @@ func unwrapJWT(jwt, hmacKey []byte) (JWT, error) {
     if _, err := base64.URLEncoding.Decode(decodedMac, mac); err != nil {
         return ret, err
     }
+
+    decodedMac = bytes.Trim(decodedMac, "\x00")
 
     if !validateMAC(jwt[:separators[1]], decodedMac, hmacKey) {
         return ret, ErrInvalidMAC
@@ -209,6 +214,8 @@ func unwrapJWT(jwt, hmacKey []byte) (JWT, error) {
     return ret, nil
 }
 
+// createJWT creates a JWT login token for the user specified by username,
+// creating a MAC using the key specified by hmacKey.
 func createJWT(username string, hmacKey []byte) (string, error) {
     header := base64.URLEncoding.EncodeToString([]byte(`{"alg":"HS256","typ":"JWT"}`))
 
@@ -233,11 +240,28 @@ func createJWT(username string, hmacKey []byte) (string, error) {
     tag := mac.Sum(nil)
     encodedTag := base64.URLEncoding.EncodeToString(tag)
 
-    jwt = encodedTag + "." + jwt
+    jwt = jwt + "." + encodedTag
 
     return string(jwt), nil
 }
 
+func checkSession(req *http.Request) (JWT, error) {
+    cookie, err := req.Cookie("session")
+    if err != nil {
+        return JWT{}, err
+    }
+
+    jwt, err := unwrapJWT([]byte(cookie.Value), hmacKey)
+    if err != nil {
+        return JWT{}, err
+    }
+
+    return jwt, nil
+}
+
+// validateMAC computes the MAC of message using the provided key,
+// and compares it with messageMAC. If the computed MAC matches
+// messageMAC, validateMAC will return true, otherwise it will return false.
 func validateMAC(message, messageMAC, key []byte) bool {
     mac := hmac.New(sha256.New, key)
     mac.Write(message)
