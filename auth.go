@@ -268,3 +268,4 @@ func validateMAC(message, messageMAC, key []byte) bool {
     expectedMAC := mac.Sum(nil)
     return subtle.ConstantTimeCompare(messageMAC, expectedMAC) == 1
 }
+
