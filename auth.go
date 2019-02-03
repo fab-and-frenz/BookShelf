@@ -6,6 +6,7 @@ import(
     "net/http"
     "html/template"
     "log"
+    "errors"
     "time"
     "crypto/sha256"
     "crypto/subtle"
@@ -19,6 +20,10 @@ import(
 
 var(
     hmacKey []byte
+
+    ErrMalformedJWT error = errors.New("Malformed JWT")
+    ErrInvalidMAC error = errors.New("Invalid MAC")
+    ErrTokenExpired error = errors.New("Expired token")
 )
 
 func init() {
@@ -157,6 +162,53 @@ func loginUserHandler(res http.ResponseWriter, req *http.Request) {
     }
 }
 
+func unwrapJWT(jwt, hmacKey []byte) (JWT, error) {
+    var ret JWT
+
+    separators := make([]int, 0, 2)
+    for i := 0; i < len(jwt); i++ {
+        if jwt[i] == '.' {
+            separators = append(separators, i)
+        }
+    }
+
+    if len(separators) != 2 {
+        return ret, ErrMalformedJWT
+    }
+
+    payload := jwt[separators[0] + 1:separators[1]]
+    mac := jwt[separators[1] + 1:]
+
+    decodedMac := make([]byte, base64.URLEncoding.DecodedLen(len(mac)))
+    if _, err := base64.URLEncoding.Decode(decodedMac, mac); err != nil {
+        return ret, err
+    }
+
+    if !validateMAC(jwt[:separators[1]], decodedMac, hmacKey) {
+        return ret, ErrInvalidMAC
+    }
+
+    jsonPayload, err := base64.URLEncoding.DecodeString(string(payload))
+    if err != nil {
+        return ret, err
+    }
+
+    if err = json.Unmarshal(jsonPayload, &ret); err != nil {
+        return ret, err
+    }
+
+    expirey := new(time.Time)
+    if err = expirey.UnmarshalText(ret.Expires); err != nil {
+        return ret, err
+    }
+
+    if time.Now().After(*expirey) {
+        return ret, ErrTokenExpired
+    }
+
+    return ret, nil
+}
+
 func createJWT(username string, hmacKey []byte) (string, error) {
     header := base64.URLEncoding.EncodeToString([]byte(`{"alg":"HS256","typ":"JWT"}`))
 
@@ -186,3 +238,9 @@ func createJWT(username string, hmacKey []byte) (string, error) {
     return string(jwt), nil
 }
 
+func validateMAC(message, messageMAC, key []byte) bool {
+    mac := hmac.New(sha256.New, key)
+    mac.Write(message)
+    expectedMAC := mac.Sum(nil)
+    return subtle.ConstantTimeCompare(messageMAC, expectedMAC) == 1
+}
