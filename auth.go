@@ -6,9 +6,13 @@ import(
     "net/http"
     "html/template"
     "log"
+    "time"
+    "crypto/sha256"
     "crypto/subtle"
     "crypto/rand"
-//    "crypto/hmac"
+    "crypto/hmac"
+    "encoding/base64"
+    "encoding/json"
     "github.com/mongodb/mongo-go-driver/mongo/options"
     "github.com/mongodb/mongo-go-driver/bson"
 )
@@ -22,6 +26,11 @@ func init() {
     if _, err := rand.Read(hmacKey); err != nil {
         log.Fatal(err)
     }
+}
+
+type JWT struct {
+    Username   string `json:"username"`
+    Expires  []byte   `json:"expires"`
 }
 
 type User struct {
@@ -140,5 +149,34 @@ func loginUserHandler(res http.ResponseWriter, req *http.Request) {
         res.WriteHeader(400)
         res.Write([]byte("Invalid username or password."))
     }
+}
+
+func createJWT(username string, hmacKey []byte) (string, error) {
+    header := base64.URLEncoding.EncodeToString([]byte(`{"alg":"HS256","typ":"JWT"}`))
+
+    expireTime, err := time.Now().Add(time.Hour).MarshalText()
+    if err != nil {
+        return "", err
+    }
+
+    jsonPayload, err := json.Marshal(JWT{
+        Username: username,
+        Expires: expireTime,
+    })
+    if err != nil {
+        return "", err
+    }
+
+    payload := base64.URLEncoding.EncodeToString(jsonPayload)
+    jwt := header + "." + payload
+
+    mac := hmac.New(sha256.New, hmacKey)
+    mac.Write([]byte(jwt))
+    tag := mac.Sum(nil)
+    encodedTag := base64.URLEncoding.EncodeToString(tag)
+
+    jwt = encodedTag + "." + jwt
+
+    return string(jwt), nil
 }
 
