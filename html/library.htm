@@ -33,8 +33,9 @@
             {{if .}}
                 {{range .}}
                     <tr>
-                        <td><a href="/read?id={{.Id}}&type={{.Type}}">{{.Title}}</a></td>
-                        <td><a>{{.Author}}</a></td>
+                        {{$ln := len .Authors}}
+                        <td><a href="/read?id={{.Id}}&type={{.Type}}">{{if .Title}}{{.Title}}{{else}}{{.Filename}}{{end}}</a></td>
+                        <td><a>{{if gt $ln 0}}{{index .Authors 0}}{{end}}</a></td>
                         <td><a href="/download?id={{.Id}}" download="{{.Filename}}">Download</a></td>
                     </tr>
                 {{end}}

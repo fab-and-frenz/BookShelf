@@ -7,6 +7,9 @@ import(
     "html/template"
     "encoding/json"
     "io/ioutil"
+    "context"
+    "github.com/mongodb/mongo-go-driver/bson"
+    "github.com/mongodb/mongo-go-driver/bson/primitive"
     "github.com/mongodb/mongo-go-driver/mongo/gridfs"
     "github.com/mongodb/mongo-go-driver/mongo/options"
 )
@@ -23,9 +26,28 @@ func init() {
     }
 }
 
-type BookFile struct {
-    Filename   string `json:"filename" bson:"filename"`
-    Data     []byte   `json:"data" bson:"data"`
+const(
+    Epub = iota
+    Mobi
+    Pdf
+    Cbz
+    Cbr
+    Cbt
+    Txt
+    Md
+)
+
+type Book struct {
+    Id         primitive.ObjectID `json:"id"       bson:"_id"`
+
+    Type       int                `json:"type"     bson:"type"`
+
+    Title      string             `json:"title"    bson:"title"`
+    Authors  []string             `json:"authors"  bson:"authors"`
+    Genre      string             `json:"genre"    bson:"genre"`
+
+    Filename   string             `json:"filename" bson:"filename"`
+    Data     []byte               `json:"data"     bson:"data"`
 }
 
 func libraryHandler(res http.ResponseWriter, req *http.Request) {
@@ -42,7 +64,26 @@ func libraryHandler(res http.ResponseWriter, req *http.Request) {
         return
     }
 
-    t.Execute(res, nil)
+    cursor, err := booksBucket.Find(bson.D{}, options.GridFSFind())
+    ctx := context.Background()
+    defer cursor.Close(ctx)
+
+    if err != nil {
+        log.Println(err)
+    }
+    
+    var books []Book
+    for cursor.Next(ctx) {
+        var book Book
+        if err := cursor.Decode(&book); err != nil {
+            log.Println(err)
+        }
+        books = append(books, book)
+    }
+
+    if err := t.Execute(res, books); err != nil {
+        log.Println(err)
+    }
 }
 
 func uploadBookHandler(res http.ResponseWriter, req *http.Request) {
@@ -52,7 +93,7 @@ func uploadBookHandler(res http.ResponseWriter, req *http.Request) {
         return
     }
     
-    var bookFile BookFile
+    var bookFile Book
     if err = json.Unmarshal(data, &bookFile); err != nil {
         res.WriteHeader(400)
         return
