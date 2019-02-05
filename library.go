@@ -17,6 +17,10 @@ var(
     booksBucket *gridfs.Bucket
 )
 
+const(
+    maxFormMemory int64 = 100000000
+)
+
 func init() {
     var err error
     booksBucket, err = gridfs.NewBucket(db, options.GridFSBucket().SetName("books"))
@@ -86,26 +90,33 @@ func libraryHandler(res http.ResponseWriter, req *http.Request) {
 }
 
 func uploadBookHandler(res http.ResponseWriter, req *http.Request) {
-    file, header, err := req.FormFile("books")
-    if err != nil {
+    if err := req.ParseMultipartForm(maxFormMemory); err != nil {
         res.WriteHeader(500)
         return
     }
-    
-    filename := header.Filename
 
-    stream, err := booksBucket.OpenUploadStream(filename, options.GridFSUpload())
-    defer stream.Close()
-    if err != nil {
-        res.WriteHeader(400)
-        log.Println(err)
-        return
-    }
+    for _, header := range req.MultipartForm.File["books"] {
+        filename := header.Filename
+        file, err := header.Open()
+        if err != nil {
+            res.WriteHeader(500)
+            log.Println(err)
+            return
+        }
 
-    if _, err := io.Copy(stream, file); err != nil {
-        res.WriteHeader(500)
-        log.Println(err)
-        return
+        stream, err := booksBucket.OpenUploadStream(filename, options.GridFSUpload())
+        defer stream.Close()
+        if err != nil {
+            res.WriteHeader(400)
+            log.Println(err)
+            return
+        }
+
+        if _, err := io.Copy(stream, file); err != nil {
+            res.WriteHeader(500)
+            log.Println(err)
+            return
+        }
     }
 
     res.WriteHeader(200)
