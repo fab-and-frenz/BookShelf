@@ -36,79 +36,15 @@
                         {{$ln := len .Authors}}
                         <td><a href="/read?id={{.Id.Hex}}&type={{.Type}}">{{if .Title}}{{.Title}}{{else}}{{.Filename}}{{end}}</a></td>
                         <td><a>{{if gt $ln 0}}{{index .Authors 0}}{{end}}</a></td>
-                        <td><a href="/download?id={{.Id.Hex}}" download="{{.Filename}}">Download</a></td>
+                        <td><a href="/downloadbook?id={{.Id.Hex}}" download="{{.Filename}}">Download</a></td>
                     </tr>
                 {{end}}
             {{end}}
         </table>
 
-        <label for="filechooser" id="filechooserbtn">Choose File(s)</label>
-        <input id="filechooser" type="file" multiple onchange="handleFiles(files)"/>
-        <style>
-            #filechooser {
-                width: 0.1px;
-                height: 0.1px;
-                opacity: 0;
-                overflow: hidden;
-                position: absolute;
-                z-index: -1;
-            }
-
-            #filechooserbtn {
-                font-size: 1.25em;
-                font-weight: 700;
-                color: white;
-                background-color: black;
-                display: inline-block;
-            }
-
-            #filechooserbtn:hover {
-                background-color: red;
-                cursor: pointer;
-            }
-        </style>
-        <script>
-            function handleFiles(files) {
-                for (var i = 0; i < files.length; i++) {
-                    readFile(files[i]).then((val) => {
-                        var req = new XMLHttpRequest();
-                        req.open("POST", "/uploadbook", true);
-
-                        req.onload = () => {
-                            console.log("res");
-                        };
-
-                        req.send(JSON.stringify(val));
-                    });
-                }
-            }
-
-            function readFile(file) {
-                return new Promise((resolve, reject) => {
-                    let reader = new FileReader();
-
-                    reader.onload = () => {
-                        resolve({
-                            filename: file.name,
-                            data: window.btoa(encode_utf8(reader.result))
-                        });
-                    };
-
-                    reader.error = () => {
-                        reject(reader.error);
-                    };
-
-                    reader.readAsText(file);
-                });
-            }
-
-            function encode_utf8(s) {
-              return unescape(encodeURIComponent(s));
-            }
-
-            function decode_utf8(s) {
-              return decodeURIComponent(escape(s));
-            }
-        </script>
+        <form action="/uploadbook" method="POST" enctype="multipart/form-data">
+            <input name="books" id="filechooser" type="file" multiple/>
+            <input type="submit" value="Upload Books"/>
+        </form>
     </body>
 </html>

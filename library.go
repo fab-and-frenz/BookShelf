@@ -3,10 +3,9 @@ package main
 import(
     "net/http"
     "log"
-    "bytes"
     "html/template"
-    "encoding/json"
-    "io/ioutil"
+    "encoding/hex"
+    "io"
     "context"
     "github.com/mongodb/mongo-go-driver/bson"
     "github.com/mongodb/mongo-go-driver/bson/primitive"
@@ -87,23 +86,51 @@ func libraryHandler(res http.ResponseWriter, req *http.Request) {
 }
 
 func uploadBookHandler(res http.ResponseWriter, req *http.Request) {
-    data, err := ioutil.ReadAll(req.Body)
+    file, header, err := req.FormFile("books")
     if err != nil {
         res.WriteHeader(500)
         return
     }
     
-    var bookFile Book
-    if err = json.Unmarshal(data, &bookFile); err != nil {
+    filename := header.Filename
+
+    stream, err := booksBucket.OpenUploadStream(filename, options.GridFSUpload())
+    defer stream.Close()
+    if err != nil {
         res.WriteHeader(400)
+        log.Println(err)
         return
     }
 
-    if _, err := booksBucket.UploadFromStream(bookFile.Filename, bytes.NewReader(bookFile.Data), options.GridFSUpload()); err != nil {
-        res.WriteHeader(400)
+    if _, err := io.Copy(stream, file); err != nil {
+        res.WriteHeader(500)
+        log.Println(err)
         return
     }
 
     res.WriteHeader(200)
+}
+
+func downloadBookHandler(res http.ResponseWriter, req *http.Request) {
+    idQuery := req.URL.Query().Get("id")
+    var id primitive.ObjectID
+    if _, err := hex.Decode(id[:], []byte(idQuery)); err != nil {
+        res.WriteHeader(400)
+        log.Println(err)
+        return
+    }
+
+    stream, err := booksBucket.OpenDownloadStream(id)
+    defer stream.Close()
+    if err != nil {
+        res.WriteHeader(500)
+        log.Println(err)
+        return
+    }
+
+    if _, err := io.Copy(res, stream); err != nil {
+        log.Println(err)
+        return
+    }
 }
 
