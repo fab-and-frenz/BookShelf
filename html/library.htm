@@ -33,12 +33,18 @@
             {{if .}}
                 {{range .}}
                     <tr>
-                        <td><a href="/read?id={{.Id}}&type={{.Type}}">{{.Title}}</a></td>
-                        <td><a>{{.Author}}</a></td>
-                        <td><a href="/download?id={{.Id}}" download="{{.Filename}}">Download</a></td>
+                        {{$ln := len .Authors}}
+                        <td><a href="/read?id={{.Id.Hex}}&type={{.Type}}">{{if .Title}}{{.Title}}{{else}}{{.Filename}}{{end}}</a></td>
+                        <td><a>{{if gt $ln 0}}{{index .Authors 0}}{{end}}</a></td>
+                        <td><a href="/downloadbook?id={{.Id.Hex}}" download="{{.Filename}}">Download</a></td>
                     </tr>
                 {{end}}
             {{end}}
         </table>
+
+        <form action="/uploadbook" method="POST" enctype="multipart/form-data">
+            <input name="books" id="filechooser" type="file" multiple/>
+            <input type="submit" value="Upload Books"/>
+        </form>
     </body>
 </html>
