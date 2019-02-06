@@ -1,0 +1,61 @@
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>{{.Title}}</title>
+
+        <!-- Include JSZip to open zip file -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
+        <!-- Include EpubJS to view Epub File -->
+        <script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
+    </head>
+    <body>
+        <div id="viewer">
+        </div>
+
+        <script>
+            var book = ePub("/downloadbook?id={{.Id.Hex}}", {openAs: "epub"});
+            var rendition = book.renderTo("viewer", {
+                method: "continuous",
+                flow: "paginated",
+                width: "100%",
+                height: "100%"
+            });
+
+            book.ready.then(function() {
+                var keyListener = function(e) {
+                    var KEY_LEFT = 37;
+                    var KEY_UP = 38;
+                    var KEY_RIGHT = 39;
+                    var KEY_DOWN = 40;
+                    var KEY_H = 72;
+                    var KEY_J = 74;
+                    var KEY_K = 75;
+                    var KEY_L = 76;
+
+                    switch ((e.keyCode || e.which)) {
+                        case KEY_LEFT:
+                        case KEY_UP:
+                        case KEY_H:
+                        case KEY_K:
+                            book.package.metadata.direction === "rtl" ? rendition.next() : rendition.prev();
+                            break;
+
+                        case KEY_RIGHT:
+                        case KEY_DOWN:
+                        case KEY_J:
+                        case KEY_L:
+                            book.package.metadata.direction === "rtl" ? rendition.prev() : rendition.next();
+                            break;
+                            
+                    }
+                };
+
+                rendition.on("keyup", keyListener);
+                document.addEventListener("keyup", keyListener, false);
+            });
+
+            rendition.display();
+        </script>
+    </body>
+</html>
+

@@ -89,11 +89,52 @@ func libraryHandler(res http.ResponseWriter, req *http.Request) {
     }
 }
 
+func readBookHandler(res http.ResponseWriter, req *http.Request) {
+    idQuery := req.URL.Query().Get("id")
+    var id primitive.ObjectID
+    if _, err := hex.Decode(id[:], []byte(idQuery)); err != nil {
+        res.WriteHeader(400)
+        log.Println(err)
+        return
+    }
+    
+    t, err := template.ParseFiles("html/epub-viewer.html")
+    if err != nil {
+        res.WriteHeader(500)
+        log.Println(err)
+        return
+    }
+
+    var book Book
+   
+    cursor, err := booksBucket.Find(bson.D{{"_id", id}}, options.GridFSFind())
+    ctx := context.Background()
+    if err != nil {
+        res.WriteHeader(404)
+        log.Println(err)
+        return
+    }
+    defer cursor.Close(ctx)
+
+    if !cursor.Next(ctx) {
+        res.WriteHeader(404)
+        log.Println("No book found")
+        return
+    }
+
+    if err := cursor.Decode(&book); err != nil {
+        res.WriteHeader(500)
+        log.Println(err)
+        return
+    }
+
+    t.Execute(res, book)
+}
+
 func uploadBookHandler(res http.ResponseWriter, req *http.Request) {
     if err := req.ParseMultipartForm(maxFormMemory); err != nil {
         res.WriteHeader(500)
-        return
-    }
+        return }
 
     for _, header := range req.MultipartForm.File["books"] {
         filename := header.Filename
