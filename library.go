@@ -171,11 +171,24 @@ func uploadBookHandler(res http.ResponseWriter, req *http.Request) {
 }
 
 func downloadBookHandler(res http.ResponseWriter, req *http.Request) {
+    jwt, err := checkSession(req)
+    if err != nil {
+        res.WriteHeader(400)
+        log.Println(err)
+        return
+    }
+    
     idQuery := req.URL.Query().Get("id")
     var id primitive.ObjectID
     if _, err := hex.Decode(id[:], []byte(idQuery)); err != nil {
         res.WriteHeader(400)
         log.Println(err)
+        return
+    }
+
+    if !userOwnsBook(jwt.Username, id) {
+        res.WriteHeader(400)
+        log.Println("No such book")
         return
     }
 
@@ -191,5 +204,20 @@ func downloadBookHandler(res http.ResponseWriter, req *http.Request) {
         log.Println(err)
         return
     }
+}
+
+func userOwnsBook(username string, id primitive.ObjectID) bool {
+    return usersCollection.FindOne(
+        context.Background(),
+        bson.M{
+            "username": username,
+            "books": bson.M{
+                "$elemMatch": bson.M{
+                    "_id": id,
+                },
+            },
+        },
+        options.FindOne(),
+    ) != nil
 }
 
