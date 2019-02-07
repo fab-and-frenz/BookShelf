@@ -40,9 +40,11 @@ type JWT struct {
 }
 
 type User struct {
-    Username     string `bson:"username" json:"saltedhash"`
-    Salt       []byte   `bson:"salt" json:"saltedhash"`
+    Username     string `bson:"username"   json:"saltedhash"`
+    Salt       []byte   `bson:"salt"       json:"saltedhash"`
     SaltedHash []byte   `bson:"saltedhash" json:"saltedhash"`
+
+    Books      []Book   `bson:"books"      json:"books"`
 }
 
 const(

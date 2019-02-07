@@ -44,13 +44,9 @@ type Book struct {
     Id         primitive.ObjectID `json:"id"       bson:"_id"`
 
     Type       int                `json:"type"     bson:"type"`
-
     Title      string             `json:"title"    bson:"title"`
     Authors  []string             `json:"authors"  bson:"authors"`
     Genre      string             `json:"genre"    bson:"genre"`
-
-    Filename   string             `json:"filename" bson:"filename"`
-    Data     []byte               `json:"data"     bson:"data"`
 }
 
 func libraryHandler(res http.ResponseWriter, req *http.Request) {
@@ -132,9 +128,17 @@ func readBookHandler(res http.ResponseWriter, req *http.Request) {
 }
 
 func uploadBookHandler(res http.ResponseWriter, req *http.Request) {
+    jwt, err := checkSession(req)
+    if err != nil {
+        res.WriteHeader(400)
+        log.Println(err)
+        return
+    }
+
     if err := req.ParseMultipartForm(maxFormMemory); err != nil {
         res.WriteHeader(500)
-        return }
+        return
+    }
 
     for _, header := range req.MultipartForm.File["books"] {
         filename := header.Filename
@@ -146,14 +150,26 @@ func uploadBookHandler(res http.ResponseWriter, req *http.Request) {
         }
 
         stream, err := booksBucket.OpenUploadStream(filename, options.GridFSUpload())
-        defer stream.Close()
         if err != nil {
             res.WriteHeader(400)
             log.Println(err)
             return
         }
+        defer stream.Close()
 
         if _, err := io.Copy(stream, file); err != nil {
+            res.WriteHeader(500)
+            log.Println(err)
+            return
+        }
+
+        _, err = usersCollection.UpdateOne(
+            context.Background(),
+            bson.M{"username": jwt.Username},
+            bson.M{"$push": bson.M{"books": Book{Id: stream.FileID}}},
+            options.Update(),
+        )
+        if err != nil {
             res.WriteHeader(500)
             log.Println(err)
             return
