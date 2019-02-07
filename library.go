@@ -77,11 +77,24 @@ func libraryHandler(res http.ResponseWriter, req *http.Request) {
 }
 
 func readBookHandler(res http.ResponseWriter, req *http.Request) {
+    jwt, err := checkSession(req)
+    if err != nil {
+        res.WriteHeader(400)
+        log.Println(err)
+        return
+    }
+
     idQuery := req.URL.Query().Get("id")
     var id primitive.ObjectID
     if _, err := hex.Decode(id[:], []byte(idQuery)); err != nil {
         res.WriteHeader(400)
         log.Println(err)
+        return
+    }
+
+    if !userOwnsBook(jwt.Username, id) {
+        res.WriteHeader(400)
+        log.Println("No such book")
         return
     }
     
