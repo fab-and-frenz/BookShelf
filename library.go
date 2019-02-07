@@ -50,7 +50,7 @@ type Book struct {
 }
 
 func libraryHandler(res http.ResponseWriter, req *http.Request) {
-    _, err := checkSession(req)
+    jwt, err := checkSession(req)
     if err != nil {
         res.Write([]byte("oopsie woopsie, you need to log in"))
         log.Println(err)
@@ -60,27 +60,18 @@ func libraryHandler(res http.ResponseWriter, req *http.Request) {
     t, err := template.ParseFiles("html/library.htm")
     if err != nil {
         res.WriteHeader(500)
+        log.Println(err)
         return
     }
 
-    cursor, err := booksBucket.Find(bson.D{}, options.GridFSFind())
-    ctx := context.Background()
-    defer cursor.Close(ctx)
-
+    user, err := lookupUser(jwt.Username)
     if err != nil {
+        res.WriteHeader(500)
         log.Println(err)
-    }
-    
-    var books []Book
-    for cursor.Next(ctx) {
-        var book Book
-        if err := cursor.Decode(&book); err != nil {
-            log.Println(err)
-        }
-        books = append(books, book)
+        return
     }
 
-    if err := t.Execute(res, books); err != nil {
+    if err := t.Execute(res, user.Books); err != nil {
         log.Println(err)
     }
 }
@@ -166,8 +157,8 @@ func uploadBookHandler(res http.ResponseWriter, req *http.Request) {
         _, err = usersCollection.UpdateOne(
             context.Background(),
             bson.M{"username": jwt.Username},
-            bson.M{"$push": bson.M{"books": Book{Id: stream.FileID}}},
-            options.Update(),
+            bson.M{"$push": bson.M{"books": Book{Id: stream.FileID, Title: filename}}},
+            options.Update().SetUpsert(true),
         )
         if err != nil {
             res.WriteHeader(500)
