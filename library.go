@@ -44,17 +44,13 @@ type Book struct {
     Id         primitive.ObjectID `json:"id"       bson:"_id"`
 
     Type       int                `json:"type"     bson:"type"`
-
     Title      string             `json:"title"    bson:"title"`
     Authors  []string             `json:"authors"  bson:"authors"`
     Genre      string             `json:"genre"    bson:"genre"`
-
-    Filename   string             `json:"filename" bson:"filename"`
-    Data     []byte               `json:"data"     bson:"data"`
 }
 
 func libraryHandler(res http.ResponseWriter, req *http.Request) {
-    _, err := checkSession(req)
+    jwt, err := checkSession(req)
     if err != nil {
         res.Write([]byte("oopsie woopsie, you need to log in"))
         log.Println(err)
@@ -64,37 +60,41 @@ func libraryHandler(res http.ResponseWriter, req *http.Request) {
     t, err := template.ParseFiles("html/library.htm")
     if err != nil {
         res.WriteHeader(500)
+        log.Println(err)
         return
     }
 
-    cursor, err := booksBucket.Find(bson.D{}, options.GridFSFind())
-    ctx := context.Background()
-    defer cursor.Close(ctx)
-
+    user, err := lookupUser(jwt.Username)
     if err != nil {
+        res.WriteHeader(500)
         log.Println(err)
-    }
-    
-    var books []Book
-    for cursor.Next(ctx) {
-        var book Book
-        if err := cursor.Decode(&book); err != nil {
-            log.Println(err)
-        }
-        books = append(books, book)
+        return
     }
 
-    if err := t.Execute(res, books); err != nil {
+    if err := t.Execute(res, user.Books); err != nil {
         log.Println(err)
     }
 }
 
 func readBookHandler(res http.ResponseWriter, req *http.Request) {
+    jwt, err := checkSession(req)
+    if err != nil {
+        res.WriteHeader(400)
+        log.Println(err)
+        return
+    }
+
     idQuery := req.URL.Query().Get("id")
     var id primitive.ObjectID
     if _, err := hex.Decode(id[:], []byte(idQuery)); err != nil {
         res.WriteHeader(400)
         log.Println(err)
+        return
+    }
+
+    if !userOwnsBook(jwt.Username, id) {
+        res.WriteHeader(400)
+        log.Println("No such book")
         return
     }
     
@@ -132,9 +132,17 @@ func readBookHandler(res http.ResponseWriter, req *http.Request) {
 }
 
 func uploadBookHandler(res http.ResponseWriter, req *http.Request) {
+    jwt, err := checkSession(req)
+    if err != nil {
+        res.WriteHeader(400)
+        log.Println(err)
+        return
+    }
+
     if err := req.ParseMultipartForm(maxFormMemory); err != nil {
         res.WriteHeader(500)
-        return }
+        return
+    }
 
     for _, header := range req.MultipartForm.File["books"] {
         filename := header.Filename
@@ -146,14 +154,26 @@ func uploadBookHandler(res http.ResponseWriter, req *http.Request) {
         }
 
         stream, err := booksBucket.OpenUploadStream(filename, options.GridFSUpload())
-        defer stream.Close()
         if err != nil {
             res.WriteHeader(400)
             log.Println(err)
             return
         }
+        defer stream.Close()
 
         if _, err := io.Copy(stream, file); err != nil {
+            res.WriteHeader(500)
+            log.Println(err)
+            return
+        }
+
+        _, err = usersCollection.UpdateOne(
+            context.Background(),
+            bson.M{"username": jwt.Username},
+            bson.M{"$push": bson.M{"books": Book{Id: stream.FileID, Title: filename}}},
+            options.Update().SetUpsert(true),
+        )
+        if err != nil {
             res.WriteHeader(500)
             log.Println(err)
             return
@@ -164,11 +184,24 @@ func uploadBookHandler(res http.ResponseWriter, req *http.Request) {
 }
 
 func downloadBookHandler(res http.ResponseWriter, req *http.Request) {
+    jwt, err := checkSession(req)
+    if err != nil {
+        res.WriteHeader(400)
+        log.Println(err)
+        return
+    }
+    
     idQuery := req.URL.Query().Get("id")
     var id primitive.ObjectID
     if _, err := hex.Decode(id[:], []byte(idQuery)); err != nil {
         res.WriteHeader(400)
         log.Println(err)
+        return
+    }
+
+    if !userOwnsBook(jwt.Username, id) {
+        res.WriteHeader(400)
+        log.Println("No such book")
         return
     }
 
@@ -184,5 +217,20 @@ func downloadBookHandler(res http.ResponseWriter, req *http.Request) {
         log.Println(err)
         return
     }
+}
+
+func userOwnsBook(username string, id primitive.ObjectID) bool {
+    return usersCollection.FindOne(
+        context.Background(),
+        bson.M{
+            "username": username,
+            "books": bson.M{
+                "$elemMatch": bson.M{
+                    "_id": id,
+                },
+            },
+        },
+        options.FindOne(),
+    ) != nil
 }
 

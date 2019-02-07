@@ -22,6 +22,7 @@ import(
 var(
     hmacKey []byte
 
+    ErrNoSuchUser error = errors.New("No such user")
     ErrMalformedJWT error = errors.New("Malformed JWT")
     ErrInvalidMAC error = errors.New("Invalid MAC")
     ErrTokenExpired error = errors.New("Expired token")
@@ -40,9 +41,11 @@ type JWT struct {
 }
 
 type User struct {
-    Username     string `bson:"username" json:"saltedhash"`
-    Salt       []byte   `bson:"salt" json:"saltedhash"`
+    Username     string `bson:"username"   json:"saltedhash"`
+    Salt       []byte   `bson:"salt"       json:"saltedhash"`
     SaltedHash []byte   `bson:"saltedhash" json:"saltedhash"`
+
+    Books      []Book   `bson:"books"      json:"books"`
 }
 
 const(
@@ -76,7 +79,6 @@ func registerUserHandler(res http.ResponseWriter, req *http.Request) {
     req.ParseForm()
     username := req.FormValue("username")
     password := req.FormValue("password")
-
     salt := make([]byte, saltLen)
     if _, err := rand.Read(salt); err != nil {
         res.WriteHeader(500)
@@ -95,6 +97,7 @@ func registerUserHandler(res http.ResponseWriter, req *http.Request) {
         Username: username,
         Salt: salt,
         SaltedHash: saltedHash,
+        Books: []Book{},
     }
 
     users := db.Collection("users")
@@ -257,6 +260,26 @@ func checkSession(req *http.Request) (JWT, error) {
     }
 
     return jwt, nil
+}
+
+func lookupUser(username string) (User, error) {
+    var user User
+
+    result := usersCollection.FindOne(
+        context.Background(),
+        bson.M{"username": username},
+        options.FindOne(),
+    )
+    
+    if result == nil {
+        return user, ErrNoSuchUser
+    }
+    
+    if err := result.Decode(&user); err != nil {
+        return user, err
+    }
+    
+    return user, nil
 }
 
 // validateMAC computes the MAC of message using the provided key,
