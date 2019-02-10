@@ -14,12 +14,15 @@
 
         <script>
             var book = ePub("/downloadbook?id={{.Id.Hex}}", {openAs: "epub"});
-            var rendition = book.renderTo("viewer", {
-                method: "continuous",
-                flow: "paginated",
-                width: "100%",
-                height: "100%"
-            });
+            var rendition = book.renderTo("viewer", { method: "continuous", flow: "paginated", width: "100%", height: "100%" });
+
+            var fontSize = 12;
+            function increaseFont() {
+                rendition.themes.fontSize(++fontSize);
+            }
+            function decreaseFont() {
+                rendition.themes.fontSize(--fontSize);
+            }
 
             book.ready.then(function() {
                 var keyListener = function(e) {
@@ -31,6 +34,9 @@
                     var KEY_J = 74;
                     var KEY_K = 75;
                     var KEY_L = 76;
+                    var KEY_EQ = 61;
+                    var KEY_MINUS = 173;
+
 
                     switch ((e.keyCode || e.which)) {
                         case KEY_LEFT:
@@ -46,13 +52,25 @@
                         case KEY_L:
                             book.package.metadata.direction === "rtl" ? rendition.prev() : rendition.next();
                             break;
+
+                        case KEY_EQ:
+                            increaseFont();
+                            break;
+
+                        case KEY_MINUS:
+                            decreaseFont();
+                            break;
                             
                     }
                 };
 
-                rendition.on("keyup", keyListener);
-                document.addEventListener("keyup", keyListener, false);
+                rendition.on("keydown", keyListener);
+                document.addEventListener("keydown", keyListener, false);
             });
+
+            rendition.themes.register("dark", "html/css/epub/themes.css");
+            rendition.themes.select("dark");
+            rendition.themes.fontSize(fontSize);
 
             rendition.display();
         </script>
