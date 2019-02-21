@@ -43,6 +43,7 @@ func main() {
     httpsMux.HandleFunc( "/uploadbook",   uploadBookHandler   )
     httpsMux.HandleFunc( "/downloadbook", downloadBookHandler )
     httpsMux.HandleFunc( "/read",         readBookHandler     )
+    httpsMux.HandleFunc( "/",             loginPageHandler    )
 
     httpsHandler := http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
         res.Header().Add("Strict-Transport-Security", "max-age=31536000; includeSubDomains")

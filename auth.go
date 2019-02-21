@@ -102,6 +102,8 @@ func registerUserHandler(res http.ResponseWriter, req *http.Request) {
 
     users := db.Collection("users")
     users.InsertOne(context.Background(), user)
+
+    http.Redirect(res, req, "/login", 302) 
 }
 
 func loginPageHandler(res http.ResponseWriter, req *http.Request) {
