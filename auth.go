@@ -168,6 +168,19 @@ func loginUserHandler(res http.ResponseWriter, req *http.Request) {
     }
 }
 
+func logoutHandler(res http.ResponseWriter, req *http.Request) {
+        cookie := http.Cookie {
+            Name: "session",
+            Value: "-1",
+            Secure: true,
+            SameSite: 1,
+            Path: "/",
+        }
+
+        http.SetCookie(res, &cookie)
+        http.Redirect(res, req, "/login", 302)
+}
+
 // unwrapJWT checks if a JWT is valid (unexpired, and distributed by the server),
 // and returns the payload as a JWT structure if it is valid.
 func unwrapJWT(jwt, hmacKey []byte) (JWT, error) {

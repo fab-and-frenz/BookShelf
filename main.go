@@ -39,6 +39,7 @@ func main() {
     httpsMux.HandleFunc( "/registeruser", registerUserHandler )
     httpsMux.HandleFunc( "/login",        loginPageHandler    )
     httpsMux.HandleFunc( "/loginuser",    loginUserHandler    )
+    httpsMux.HandleFunc( "/logout",       logoutHandler       )
     httpsMux.HandleFunc( "/library",      libraryHandler      )
     httpsMux.HandleFunc( "/uploadbook",   uploadBookHandler   )
     httpsMux.HandleFunc( "/downloadbook", downloadBookHandler )
