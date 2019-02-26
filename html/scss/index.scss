@@ -1,0 +1,36 @@
+
+$accent-darktheme: lightblue;
+$bg-darktheme: #222222;
+$link-hover-darktheme: lightblue;
+$link-darktheme: white;
+$text-darktheme: white;
+$input-text-darktheme: white;
+$input-bg-darktheme: #111111;
+
+body {
+    background: $bg-darktheme;
+}
+
+* {
+    color: $text-darktheme;
+}
+
+a {
+    color: $link-darktheme;
+
+    &:hover {
+        color: $link-hover-darktheme;
+    }
+}
+
+input[type="text"], input[type="password"] {
+    color: $input-text-darktheme;
+    background-color: $input-bg-darktheme;
+    border-color: black;
+
+    &:focus {
+        color: $input-text-darktheme;
+        background-color: $input-bg-darktheme;
+        border-color: $accent-darktheme;
+    }
+}

@@ -2,13 +2,12 @@
     <head>
         <meta charset="utf-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        
+
         <!-- Bootstrap Stuff -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"></script>
 
+        <link rel="stylesheet" type="text/css" href="/html/css/index.css" />
+        
         <title>BookShelf: Library</title>
     </head>
 
@@ -32,58 +31,32 @@
             </ul>
         </nav>
         
-        <!--
-        <div class="dropdown">
-            <button class="dropbtn">View:</button>
-            <div class="dropdown-content">
-                <a href="">GRID</a>
-                <a href="">LIST</a>
-            </div>
-        </div>
-        -->
+        <table class="table-dark table-striped center-block" id="books">
+            <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Download</th>
+            </tr>
 
-                    <table class="table-dark table-striped center-block" id="books">
-                        <tr>
-                            <th>Title</th>
-                            <th>Author</th>
-                            <th>Download</th>
-                        </tr>
+            {{if .}}
+                {{range .}}
+                    <tr>
+                        {{$ln := len .Authors}}
+                        <td><a href="/read?id={{.Id.Hex}}&type={{.Type}}">{{.Title}}</a></td>
+                        <td><a>{{if gt $ln 0}}{{index .Authors 0}}{{end}}</a></td>
+                        <td><a href="/downloadbook?id={{.Id.Hex}}" download>Download</a></td>
+                    </tr>
+                {{end}}
+            {{end}}
+        </table>
 
-                        {{if .}}
-                            {{range .}}
-                                <tr>
-                                    {{$ln := len .Authors}}
-                                    <td><a href="/read?id={{.Id.Hex}}&type={{.Type}}">{{.Title}}</a></td>
-                                    <td><a>{{if gt $ln 0}}{{index .Authors 0}}{{end}}</a></td>
-                                    <td><a href="/downloadbook?id={{.Id.Hex}}" download>Download</a></td>
-                                </tr>
-                            {{end}}
-                        {{end}}
-                    </table>
-
-            <form action="/uploadbook" method="POST" enctype="multipart/form-data">
-                <input name="books" id="filechooser" type="file" multiple/>
-                <input type="submit" value="Upload Books"/>
-            </form>
+        <form action="/uploadbook" method="POST" enctype="multipart/form-data">
+            <input name="books" id="filechooser" type="file" multiple/>
+            <input type="submit" class="btn btn-primary" value="Upload Books"/>
+        </form>
 
 
         <style>
-            body {
-                background: #222222;
-            }
-
-            * {
-                color: white;
-            }
-
-            a {
-                color: white;
-            }
-
-            a:hover {
-                color: lightblue;
-            }
-
             #books {
                 width: 100%;
             }
