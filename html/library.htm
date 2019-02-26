@@ -30,21 +30,21 @@
                 </li>
             </ul>
         </nav>
-        
+       
         <table class="table-dark table-striped center-block" id="books">
             <tr>
-                <th>Title</th>
-                <th>Author</th>
-                <th>Download</th>
+                <th style="text-align:left">Title</th>
+                <th style="text-align:center">Author</th>
+                <th style="text-align:right">Download</th>
             </tr>
 
             {{if .}}
                 {{range .}}
                     <tr>
                         {{$ln := len .Authors}}
-                        <td><a href="/read?id={{.Id.Hex}}&type={{.Type}}">{{.Title}}</a></td>
-                        <td><a>{{if gt $ln 0}}{{index .Authors 0}}{{end}}</a></td>
-                        <td><a href="/downloadbook?id={{.Id.Hex}}" download>Download</a></td>
+                        <td style="text-align:left"><a href="/read?id={{.Id.Hex}}&type={{.Type}}">{{.Title}}</a></td>
+                        <td style="text-align:center"><a>{{if gt $ln 0}}{{index .Authors 0}}{{end}}</a></td>
+                        <td style="text-align:right"><a href="/downloadbook?id={{.Id.Hex}}" download>Download</a></td>
                     </tr>
                 {{end}}
             {{end}}

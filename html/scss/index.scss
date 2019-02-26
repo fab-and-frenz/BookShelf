@@ -23,6 +23,25 @@ a {
     }
 }
 
+h1 {
+    color: $text-darktheme;
+}
+h2 {
+    color: $text-darktheme;
+}
+h3 {
+    color: $text-darktheme;
+}
+h4 {
+    color: $text-darktheme;
+}
+h5 {
+    color: $text-darktheme;
+}
+h6 {
+    color: $text-darktheme;
+}
+
 input[type="text"], input[type="password"] {
     color: $input-text-darktheme;
     background-color: $input-bg-darktheme;
