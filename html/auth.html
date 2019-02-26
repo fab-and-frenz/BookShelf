@@ -2,23 +2,34 @@
 <html>
     <head>
         <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        
+        <!-- Bootstrap Stuff -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"></script>
 
         <title>BookShelf: Login</title>
     </head>
     <body>
-        <h1>{{.Name}}</h1>
+        <div class="container">
+            <h1>{{.Name}}</h1> 
 
-        <form method="POST" action="{{.Action}}">
-            <label for="userinput">Username:</label>
-            <input id="userinput" type="text" name="username"/>
-            <br/>
+            <form method="POST" action="{{.Action}}">
+                <div class="form-group">
+                    <label for="userinput">Username:</label>
+                    <input id="userinput" class="form-control" type="text" name="username"/>
+                </div>
 
-            <label for="passinput">Password:</label>
-            <input id="passinput" type="password" name="password"/>
-            <br/>
+                <div class="form-group">
+                    <label for="passinput">Password:</label>
+                    <input id="passinput" class="form-control" type="password" name="password"/>
+                </div>
 
-            <input type="submit" value="{{.Name}}"/>
-        </form>
+                <input type="submit" class="btn btn-primary" value="{{.Name}}"/>
+            </form>
+        </div>
     </body>
 </html>
 
