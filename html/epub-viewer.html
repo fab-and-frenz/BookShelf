@@ -7,8 +7,17 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
         <!-- Include EpubJS to view Epub File -->
         <script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
+
+        <link rel="stylesheet" type="text/css" href="/html/css/index.css" />
     </head>
     <body>
+        <style>
+            body {
+                margin: 0px;
+                padding: 0px;
+            }
+        </style>
+
         <div id="viewer">
         </div>
 
@@ -16,7 +25,7 @@
             var book = ePub("/downloadbook?id={{.Id.Hex}}", {openAs: "epub"});
             var rendition = book.renderTo("viewer", { method: "continuous", flow: "paginated", width: "100%", height: "100%" });
 
-            var fontSize = 12;
+            var fontSize = 18;
             function increaseFont() {
                 rendition.themes.fontSize(++fontSize);
             }
@@ -68,7 +77,7 @@
                 document.addEventListener("keydown", keyListener, false);
             });
 
-            rendition.themes.register("dark", "html/css/epub/themes.css");
+            rendition.themes.register("dark", "html/css/epub-themes.css");
             rendition.themes.select("dark");
             rendition.themes.fontSize(fontSize);
 

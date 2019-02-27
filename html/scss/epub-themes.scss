@@ -1,0 +1,17 @@
+@import 'fonts';
+
+.dark {
+    background: #222222;
+    color: #dddddd;
+    line-height: 1.4;
+    font-family: Georgia;
+
+    a {
+        color: lightblue;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+

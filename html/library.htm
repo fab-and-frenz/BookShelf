@@ -3,9 +3,10 @@
         <meta charset="utf-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
+        <!-- FontAwesome Icons -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <!-- Bootstrap Stuff -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
-
         <link rel="stylesheet" type="text/css" href="/html/css/index.css" />
         
         <title>BookShelf: Library</title>
@@ -44,7 +45,7 @@
                         {{$ln := len .Authors}}
                         <td style="text-align:left"><a href="/read?id={{.Id.Hex}}&type={{.Type}}">{{.Title}}</a></td>
                         <td style="text-align:center"><a>{{if gt $ln 0}}{{index .Authors 0}}{{end}}</a></td>
-                        <td style="text-align:right"><a href="/downloadbook?id={{.Id.Hex}}" download>Download</a></td>
+                        <td style="text-align:right"><a href="/downloadbook?id={{.Id.Hex}}" download><i class="fa fa-cloud-download"></i> Download</a></td>
                     </tr>
                 {{end}}
             {{end}}
