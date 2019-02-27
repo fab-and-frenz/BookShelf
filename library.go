@@ -180,7 +180,7 @@ func uploadBookHandler(res http.ResponseWriter, req *http.Request) {
         }
     }
 
-    res.WriteHeader(200)
+    http.Redirect(res, req, "/library", 302)
 }
 
 func downloadBookHandler(res http.ResponseWriter, req *http.Request) {
