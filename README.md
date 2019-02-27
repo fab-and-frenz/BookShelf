@@ -19,3 +19,24 @@ Epub   | yes     | no
 Mobi   | no      | no
 Pdf    | yes     | no
 
+## Build & Run
+
+You must have Golang, Sass, and MongoDB installed.
+Once these prerequisites have been met, build and run BookShelf with the following commands:
+
+```sh
+# get the source code
+go get github.com/fab-and-frenz/BookShelf
+
+# go to the root directory
+cd $GOPATH/src/github.com/fab-and-frenz/BookShelf
+
+# compile the code
+go build
+
+# compile the scss
+sass html/scss:html/css
+
+# run bookshelf with the certificate `cert.pem` and private key `privkey.pem`
+./BookShelf -c cert.pem -p privkey.pem
+```
