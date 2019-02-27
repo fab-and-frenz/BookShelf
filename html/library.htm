@@ -7,13 +7,14 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
         <!-- Bootstrap Stuff -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
-        <link rel="stylesheet" type="text/css" href="/html/css/index.css" />
+
+        <!--<link rel="stylesheet" type="text/css" href="/html/css/index.css" />-->
         
         <title>BookShelf: Library</title>
     </head>
 
     <body>
-        <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+        <nav class="navbar navbar-expand-sm bg-dark navbar-dark" style="margin-bottom: 18px">
             <a class="navbar-brand" href="#">BookShelf</a>
 
             <ul class="navbar-nav">
@@ -31,30 +32,35 @@
                 </li>
             </ul>
         </nav>
-       
-        <table class="table-dark table-striped center-block" id="books">
-            <tr>
-                <th style="text-align:left">Title</th>
-                <th style="text-align:center">Author</th>
-                <th style="text-align:right">Download</th>
-            </tr>
-
+      
+        <div class="container">
+            <h1>Library</h1>
+            <div class="row">
             {{if .}}
                 {{range .}}
-                    <tr>
-                        {{$ln := len .Authors}}
-                        <td style="text-align:left"><a href="/read?id={{.Id.Hex}}&type={{.Type}}">{{.Title}}</a></td>
-                        <td style="text-align:center"><a>{{if gt $ln 0}}{{index .Authors 0}}{{end}}</a></td>
-                        <td style="text-align:right"><a href="/downloadbook?id={{.Id.Hex}}" download><i class="fa fa-cloud-download"></i> Download</a></td>
-                    </tr>
+                    <div class="col-sm-4" style="margin-top: 18px;margin-bottom: 18px">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{.Title}}</h5>
+                            <p class="card-text">{{if .Authors}}By: {{.Authors 0}}{{end}}</p>
+                            <a href="/downloadbook?id={{.Id.Hex}}&type={{.Type}}" class="btn"><i class="fa fa-cloud-download"></i> Download</a>
+                            <a href="/read?id={{.Id.Hex}}&type={{.Type}}" class="btn btn-primary">Read</a>
+                        </div>
+                    </div>
+                    </div>
                 {{end}}
             {{end}}
-        </table>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <form action="/uploadbook" method="POST" enctype="multipart/form-data">
+                        <input name="books" id="filechooser" type="file" multiple/>
+                        <input type="submit" class="btn btn-primary" value="Upload Books"/>
+                    </form>
+                </div>
+            </div>
+        </div>
 
-        <form action="/uploadbook" method="POST" enctype="multipart/form-data">
-            <input name="books" id="filechooser" type="file" multiple/>
-            <input type="submit" class="btn btn-primary" value="Upload Books"/>
-        </form>
 
 
         <style>
