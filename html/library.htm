@@ -30,19 +30,22 @@
             </ul>
         </nav>
       
-        <div class="container">
+        <div class="container-fluid">
             <div class="row">
             {{if .}}
                 {{range .}}
-                    <div class="col-sm-4" style="margin-top: 18px;margin-bottom: 18px">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">{{.Title}}</h5>
-                            <p class="card-text">{{if .Authors}}By: {{.Authors 0}}{{end}}</p>
-                            <a href="/downloadbook?id={{.Id.Hex}}&type={{.Type}}" class="btn"><i class="fa fa-cloud-download"></i> Download</a>
-                            <a href="/read?id={{.Id.Hex}}&type={{.Type}}" class="btn btn-primary">Read</a>
+                    <div class="col-sm-2" style="margin-top: 18px;margin-bottom: 18px">
+
+                        <div class="card">
+                            <img class="card-img-top" src="/html/cover-blue.png">
+                            <div class="card-body">
+                                <h6 class="card-title">{{.Title}}</h6>
+                                <p class="card-text">{{if .Authors}}By: {{.Authors 0}}{{end}}</p>
+                                <a href="/downloadbook?id={{.Id.Hex}}&type={{.Type}}" class="btn"><i class="fa fa-cloud-download"></i></a>
+                                <a href="/read?id={{.Id.Hex}}&type={{.Type}}" class="btn btn-primary"><i class="fa fa-book"></i> Read</a>
+                            </div>
                         </div>
-                    </div>
+
                     </div>
                 {{end}}
             {{end}}
