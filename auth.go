@@ -20,6 +20,7 @@ import(
 )
 
 var(
+    // The hmac key used to sign JWTs
     hmacKey []byte
 
     ErrNoSuchUser error = errors.New("No such user")
@@ -29,6 +30,7 @@ var(
 )
 
 func init() {
+    // Create a random HMAC key
     hmacKey = make([]byte, 32)
     if _, err := rand.Read(hmacKey); err != nil {
         log.Fatal(err)
@@ -56,10 +58,12 @@ const(
     saltLen int = 16
 )
 
+// HashAndSaltPassword hashes password with the given salt, using SCrypt
 func HashAndSaltPassword(password, salt []byte) ([]byte, error) {
     return scrypt.Key(password, salt, scryptN, scryptR, scryptP, hashLen)
 }
 
+// registerPageHandler shows the html frontend for the register page
 func registerPageHandler(res http.ResponseWriter, req *http.Request) {
     t, err := template.ParseFiles("html/auth.html")
     if err != nil {
@@ -75,10 +79,16 @@ func registerPageHandler(res http.ResponseWriter, req *http.Request) {
     }
 }
 
+// registerUserHandler handles requests to register a user with the system.
+// This requests happens when someone submits their registration details from the register page.
 func registerUserHandler(res http.ResponseWriter, req *http.Request) {
     req.ParseForm()
+
+    // Get the submitted username and password
     username := req.FormValue("username")
     password := req.FormValue("password")
+
+    // Create a random salt for the user
     salt := make([]byte, saltLen)
     if _, err := rand.Read(salt); err != nil {
         res.WriteHeader(500)
@@ -86,13 +96,14 @@ func registerUserHandler(res http.ResponseWriter, req *http.Request) {
         return
     }
 
+    // Hash the password
     saltedHash, err := HashAndSaltPassword([]byte(password), salt)
     if err != nil {
         res.WriteHeader(500)
         log.Println(err)
         return
     }
-
+    
     user := User {
         Username: username,
         Salt: salt,
@@ -100,12 +111,15 @@ func registerUserHandler(res http.ResponseWriter, req *http.Request) {
         Books: []Book{},
     }
 
+    // Update the database with the new user
     users := db.Collection("users")
     users.InsertOne(context.Background(), user)
 
+    // Redirect to the login page after registration
     http.Redirect(res, req, "/login", 302) 
 }
 
+// loginPageHandler shows the html for the login page
 func loginPageHandler(res http.ResponseWriter, req *http.Request) {
     t, err := template.ParseFiles("html/auth.html")
     if err != nil {
@@ -121,11 +135,16 @@ func loginPageHandler(res http.ResponseWriter, req *http.Request) {
     }
 }
 
+// loginUserHandler handles a request to log-in.
+// This is called when someone sends their credentials from the login page.
 func loginUserHandler(res http.ResponseWriter, req *http.Request) {
     req.ParseForm()
+
+    // Get the submitted username and password
     username := req.FormValue("username")
     password := req.FormValue("password")
 
+    // Retrieve that user from the database
     var user User
     err := usersCollection.FindOne(
         context.Background(),
@@ -138,6 +157,7 @@ func loginUserHandler(res http.ResponseWriter, req *http.Request) {
         return
     }
 
+    // Hash the password supplied by the user
     saltedHash, err := HashAndSaltPassword([]byte(password), user.Salt)
     if err != nil {
         res.WriteHeader(500)
@@ -145,13 +165,16 @@ func loginUserHandler(res http.ResponseWriter, req *http.Request) {
         return
     }
 
+    // If the computed and stored hashes match, log the user in
     if subtle.ConstantTimeCompare(saltedHash, user.SaltedHash) == 1 {
+        // Create a JWT for the user
         jwt, err := createJWT(username, hmacKey)
         if err != nil {
             res.WriteHeader(500)
             res.Write([]byte("Failed to login"))
         }
 
+        // Store the JWT as a cookie
         cookie := http.Cookie {
             Name: "session",
             Value: jwt,
@@ -161,6 +184,8 @@ func loginUserHandler(res http.ResponseWriter, req *http.Request) {
         }
 
         http.SetCookie(res, &cookie)
+
+        // Direct the user to the library page after they have logged in
         http.Redirect(res, req, "/library", 302)
     } else {
         res.WriteHeader(400)
@@ -168,6 +193,7 @@ func loginUserHandler(res http.ResponseWriter, req *http.Request) {
     }
 }
 
+// logoutHandler invalidates a cookie that has been set, by setting it to "-1"
 func logoutHandler(res http.ResponseWriter, req *http.Request) {
         cookie := http.Cookie {
             Name: "session",
@@ -186,6 +212,7 @@ func logoutHandler(res http.ResponseWriter, req *http.Request) {
 func unwrapJWT(jwt, hmacKey []byte) (JWT, error) {
     var ret JWT
 
+    // Find the locations of the separators in the JWT
     separators := make([]int, 0, 2)
     for i := 0; i < len(jwt); i++ {
         if jwt[i] == '.' {
@@ -197,34 +224,40 @@ func unwrapJWT(jwt, hmacKey []byte) (JWT, error) {
         return ret, ErrMalformedJWT
     }
 
+    // Extract the payload and MAC
     payload := jwt[separators[0] + 1:separators[1]]
     mac := jwt[separators[1] + 1:]
 
+    // Decode the Base64-encoded MAC
     decodedMac := make([]byte, base64.URLEncoding.DecodedLen(len(mac)))
     if _, err := base64.URLEncoding.Decode(decodedMac, mac); err != nil {
         return ret, err
     }
 
+    // Remove any null bytes
     decodedMac = bytes.Trim(decodedMac, "\x00")
 
+    // Verify the MAC tag
     if !validateMAC(jwt[:separators[1]], decodedMac, hmacKey) {
         return ret, ErrInvalidMAC
     }
 
+    // Decode the Base64  payload
     jsonPayload, err := base64.URLEncoding.DecodeString(string(payload))
     if err != nil {
         return ret, err
     }
 
+    // Decode the JSON into a JWT structure
     if err = json.Unmarshal(jsonPayload, &ret); err != nil {
         return ret, err
     }
 
+    // Verify that the JWT is still valid
     expirey := new(time.Time)
     if err = expirey.UnmarshalText(ret.Expires); err != nil {
         return ret, err
     }
-
     if time.Now().After(*expirey) {
         return ret, ErrTokenExpired
     }
@@ -235,13 +268,16 @@ func unwrapJWT(jwt, hmacKey []byte) (JWT, error) {
 // createJWT creates a JWT login token for the user specified by username,
 // creating a MAC using the key specified by hmacKey.
 func createJWT(username string, hmacKey []byte) (string, error) {
+    // Create the header
     header := base64.URLEncoding.EncodeToString([]byte(`{"alg":"HS256","typ":"JWT"}`))
 
+    // Set the token to expire in one hour
     expireTime, err := time.Now().Add(time.Hour).MarshalText()
     if err != nil {
         return "", err
     }
 
+    // Convert the JWT into a JSON string
     jsonPayload, err := json.Marshal(JWT{
         Username: username,
         Expires: expireTime,
@@ -250,19 +286,25 @@ func createJWT(username string, hmacKey []byte) (string, error) {
         return "", err
     }
 
+    // Concatenate the header and payload
     payload := base64.URLEncoding.EncodeToString(jsonPayload)
     jwt := header + "." + payload
 
+    // Compute the HMAC tag for the token
     mac := hmac.New(sha256.New, hmacKey)
     mac.Write([]byte(jwt))
     tag := mac.Sum(nil)
     encodedTag := base64.URLEncoding.EncodeToString(tag)
 
+    // Concatenate the HMAC tag to the end of the JWT
     jwt = jwt + "." + encodedTag
 
     return string(jwt), nil
 }
 
+// checkSession checks if a user is logged in or not.
+// If the user is logged in, the user's JWT is returned.
+// If the user is not logged in, an error is returned, and JWT will be nil
 func checkSession(req *http.Request) (JWT, error) {
     cookie, err := req.Cookie("session")
     if err != nil {
@@ -277,6 +319,8 @@ func checkSession(req *http.Request) (JWT, error) {
     return jwt, nil
 }
 
+// lookupUser checks if a user exists in the database, and returns
+// that user's record if he does.
 func lookupUser(username string) (User, error) {
     var user User
 
