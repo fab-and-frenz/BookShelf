@@ -14,6 +14,7 @@ var(
     usersCollection *mongo.Collection
 )
 
+// Establish a connection with the MongoDB database
 func init() {
     client, err := mongo.NewClient("mongodb://localhost")
     if err != nil {
