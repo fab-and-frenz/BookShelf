@@ -1,6 +1,9 @@
 package main
 
 import(
+    "github.com/go-chi/chi"
+    "github.com/go-chi/chi/middleware"
+    //"github.com/go-chi/jwtauth"
     "net/http"
     "log"
     "io/ioutil"
@@ -35,32 +38,27 @@ func main() {
     }
 
     // Connect each route to a corresponding request-handler function
-    httpsMux := http.NewServeMux()
-    httpsMux.HandleFunc( "/html/",        htmlHandler         )
-    httpsMux.HandleFunc( "/register",     registerPageHandler )
-    httpsMux.HandleFunc( "/registeruser", registerUserHandler )
-    httpsMux.HandleFunc( "/login",        loginPageHandler    )
-    httpsMux.HandleFunc( "/loginuser",    loginUserHandler    )
-    httpsMux.HandleFunc( "/logout",       logoutHandler       )
-    httpsMux.HandleFunc( "/library",      libraryHandler      )
-    httpsMux.HandleFunc( "/uploadbook",   uploadBookHandler   )
-    httpsMux.HandleFunc( "/downloadbook", downloadBookHandler )
-    httpsMux.HandleFunc( "/read",         readBookHandler     )
-    httpsMux.HandleFunc( "/",             loginPageHandler    )
+    sr := chi.NewRouter()
 
-    // The request handler for all https requests
-    httpsHandler := http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-        // Adds the HSTS header to all https requests
-        res.Header().Add("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+    sr.Use(middleware.Logger)
+    sr.Use(middleware.SetHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains"))
 
-        // Give the correct response for a given request
-        httpsMux.ServeHTTP(res, req)
-    })
+    sr.Get ( "/html/",        htmlHandler         )
+    sr.Get ( "/register",     registerPageHandler )
+    sr.Post( "/registeruser", registerUserHandler )
+    sr.Get ( "/login",        loginPageHandler    )
+    sr.Post( "/loginuser",    loginUserHandler    )
+    sr.Get ( "/logout",       logoutHandler       )
+    sr.Get ( "/library",      libraryHandler      )
+    sr.Post( "/uploadbook",   uploadBookHandler   )
+    sr.Get ( "/downloadbook", downloadBookHandler )
+    sr.Get ( "/read",         readBookHandler     )
+    sr.Get ( "/",             loginPageHandler    )
 
     // Setup the HTTPS Server
     httpsServer := &http.Server {
         Addr: httpsAddr,
-        Handler: httpsHandler,
+        Handler: sr,
         TLSConfig: &tls.Config {
             MinVersion: tls.VersionTLS12,
             PreferServerCipherSuites: true,
