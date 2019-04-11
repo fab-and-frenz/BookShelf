@@ -1,6 +1,9 @@
 package main
 
 import(
+    "github.com/go-chi/chi"
+    "github.com/go-chi/chi/middleware"
+    "github.com/go-chi/jwtauth"
     "net/http"
     "log"
     "io/ioutil"
@@ -10,20 +13,19 @@ import(
     "fmt"
 )
 
-const(
-    httpAddr  string = ":8080"
-    httpsAddr string = ":9090"
+var (
+    certFile    string
+    privKeyFile string
+    httpAddr    string
+    httpsAddr   string
 )
 
-func main() {
-    var (
-        certFile    string
-        privKeyFile string
-    )
-
+func init() {
     // Parse command-line arguments
-    flag.StringVar(&certFile, "c", "", "The location of your ssl certificate")
-    flag.StringVar(&privKeyFile, "p", "", "The location of your ssl private key")
+    flag.StringVar(&certFile, "cert", "", "The location of your ssl certificate")
+    flag.StringVar(&privKeyFile, "privkey", "", "The location of your ssl private key")
+    flag.StringVar(&httpAddr, "http-addr", ":8080", "The address from which to listen to http requests")
+    flag.StringVar(&httpsAddr, "https-addr", ":9090", "The address from which to listen to https requests")
     flag.Parse()
 
     // Exit if no certificate or private key were specified.
@@ -33,34 +35,40 @@ func main() {
     if privKeyFile == "" {
         log.Fatal("No private key specified")
     }
+}
 
+func main() {
     // Connect each route to a corresponding request-handler function
-    httpsMux := http.NewServeMux()
-    httpsMux.HandleFunc( "/html/",        htmlHandler         )
-    httpsMux.HandleFunc( "/register",     registerPageHandler )
-    httpsMux.HandleFunc( "/registeruser", registerUserHandler )
-    httpsMux.HandleFunc( "/login",        loginPageHandler    )
-    httpsMux.HandleFunc( "/loginuser",    loginUserHandler    )
-    httpsMux.HandleFunc( "/logout",       logoutHandler       )
-    httpsMux.HandleFunc( "/library",      libraryHandler      )
-    httpsMux.HandleFunc( "/uploadbook",   uploadBookHandler   )
-    httpsMux.HandleFunc( "/downloadbook", downloadBookHandler )
-    httpsMux.HandleFunc( "/read",         readBookHandler     )
-    httpsMux.HandleFunc( "/",             loginPageHandler    )
+    sr := chi.NewRouter()
 
-    // The request handler for all https requests
-    httpsHandler := http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-        // Adds the HSTS header to all https requests
-        res.Header().Add("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+    sr.Use(middleware.Logger)
+    sr.Use(middleware.SetHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains"))
 
-        // Give the correct response for a given request
-        httpsMux.ServeHTTP(res, req)
+    // Connect Unprotected Routes to their Handlers
+    sr.Get ( "/html/",        htmlHandler         )
+    sr.Get ( "/register",     registerPageHandler )
+    sr.Post( "/registeruser", registerUserHandler )
+    sr.Get ( "/login",        loginPageHandler    )
+    sr.Post( "/loginuser",    loginUserHandler    )
+    sr.Get ( "/",             loginPageHandler    )
+
+    // Protected Routes that Require JWT authentication
+    // You must be logged in to access these routes
+    sr.Group(func(pr chi.Router) {
+        pr.Use(jwtauth.Verifier(tokenAuth))
+        pr.Use(jwtauth.Authenticator)
+
+        pr.Get ( "/logout",       logoutHandler       )
+        pr.Get ( "/library",      libraryHandler      )
+        pr.Post( "/uploadbook",   uploadBookHandler   )
+        pr.Get ( "/downloadbook", downloadBookHandler )
+        pr.Get ( "/read",         readBookHandler     )
     })
 
     // Setup the HTTPS Server
     httpsServer := &http.Server {
         Addr: httpsAddr,
-        Handler: httpsHandler,
+        Handler: sr,
         TLSConfig: &tls.Config {
             MinVersion: tls.VersionTLS12,
             PreferServerCipherSuites: true,
