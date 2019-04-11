@@ -9,8 +9,8 @@ import(
     "context"
     "github.com/mongodb/mongo-go-driver/bson"
     "github.com/mongodb/mongo-go-driver/bson/primitive"
-    "github.com/mongodb/mongo-go-driver/mongo/gridfs"
-    "github.com/mongodb/mongo-go-driver/mongo/options"
+    "go.mongodb.org/mongo-driver/mongo/gridfs"
+    "go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var(
@@ -161,7 +161,7 @@ func uploadBookHandler(res http.ResponseWriter, req *http.Request) {
         _, err = usersCollection.UpdateOne(
             context.Background(),
             bson.M{"username": jwt.Username},
-            bson.M{"$push": bson.M{"books": Book{Id: stream.FileID, Title: filename}}},
+            bson.M{"$push": bson.M{"books": Book{Id: stream.FileID.(primitive.ObjectID), Title: filename}}},
             options.Update().SetUpsert(true),
         )
         if err != nil {

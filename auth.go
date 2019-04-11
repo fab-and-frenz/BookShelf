@@ -15,7 +15,7 @@ import(
     "crypto/hmac"
     "encoding/base64"
     "encoding/json"
-    "github.com/mongodb/mongo-go-driver/mongo/options"
+    "go.mongodb.org/mongo-driver/mongo/options"
     "github.com/mongodb/mongo-go-driver/bson"
 )
 

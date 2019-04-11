@@ -1,9 +1,9 @@
 package main
 
 import(
-    "github.com/mongodb/mongo-go-driver/mongo"
+    "go.mongodb.org/mongo-driver/mongo"
     "github.com/mongodb/mongo-go-driver/bson"
-    "github.com/mongodb/mongo-go-driver/mongo/options"
+    "go.mongodb.org/mongo-driver/mongo/options"
     "context"
     "time"
     "log"
@@ -16,7 +16,7 @@ var(
 
 // Establish a connection with the MongoDB database
 func init() {
-    client, err := mongo.NewClient("mongodb://localhost")
+    client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost"))
     if err != nil {
         log.Println(err)
     }
