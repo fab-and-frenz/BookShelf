@@ -26,10 +26,10 @@ Once these prerequisites have been met, build and run BookShelf with the followi
 
 ```sh
 # get the source code
-go get github.com/fab-and-frenz/BookShelf
+git clone github.com/fab-and-frenz/bookshelf
 
 # go to the root directory
-cd $GOPATH/src/github.com/fab-and-frenz/BookShelf
+cd bookshelf
 
 # compile the code
 go build
@@ -38,5 +38,5 @@ go build
 sass html/scss:html/css
 
 # run bookshelf with the certificate `cert.pem` and private key `privkey.pem`
-./BookShelf -c cert.pem -p privkey.pem
+./bookshelf -cert cert.pem -privkey privkey.pem
 ```
