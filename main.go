@@ -13,20 +13,19 @@ import(
     "fmt"
 )
 
-const(
-    httpAddr  string = ":8080"
-    httpsAddr string = ":9090"
+var (
+    certFile    string
+    privKeyFile string
+    httpAddr    string
+    httpsAddr   string
 )
 
-func main() {
-    var (
-        certFile    string
-        privKeyFile string
-    )
-
+func init() {
     // Parse command-line arguments
-    flag.StringVar(&certFile, "c", "", "The location of your ssl certificate")
-    flag.StringVar(&privKeyFile, "p", "", "The location of your ssl private key")
+    flag.StringVar(&certFile, "cert", "", "The location of your ssl certificate")
+    flag.StringVar(&privKeyFile, "privkey", "", "The location of your ssl private key")
+    flag.StringVar(&httpAddr, "http-addr", ":8080", "The address from which to listen to http requests")
+    flag.StringVar(&httpsAddr, "https-addr", ":9090", "The address from which to listen to https requests")
     flag.Parse()
 
     // Exit if no certificate or private key were specified.
@@ -36,7 +35,9 @@ func main() {
     if privKeyFile == "" {
         log.Fatal("No private key specified")
     }
+}
 
+func main() {
     // Connect each route to a corresponding request-handler function
     sr := chi.NewRouter()
 
