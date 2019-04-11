@@ -7,6 +7,7 @@ import(
     "encoding/hex"
     "io"
     "context"
+    "github.com/go-chi/jwtauth"
     "github.com/mongodb/mongo-go-driver/bson"
     "github.com/mongodb/mongo-go-driver/bson/primitive"
     "github.com/mongodb/mongo-go-driver/mongo/gridfs"
@@ -53,10 +54,10 @@ type Book struct {
 
 // libraryHandler shows the html page with a user's library
 func libraryHandler(res http.ResponseWriter, req *http.Request) {
-    jwt, err := checkSession(req)
+    _, claims, err := jwtauth.FromContext(req.Context())
     if err != nil {
-        res.Write([]byte("oopsie woopsie, you need to log in"))
         log.Println(err)
+        res.WriteHeader(500)
         return
     }
 
@@ -67,7 +68,7 @@ func libraryHandler(res http.ResponseWriter, req *http.Request) {
         return
     }
 
-    user, err := lookupUser(jwt.Username)
+    user, err := lookupUser(claims["username"].(string))
     if err != nil {
         res.WriteHeader(500)
         log.Println(err)
@@ -82,11 +83,10 @@ func libraryHandler(res http.ResponseWriter, req *http.Request) {
 // readBookHandler shows the page that displays a book for reading
 // (when you press "read" on a book from library).
 func readBookHandler(res http.ResponseWriter, req *http.Request) {
-    // Check that the user is logged in
-    jwt, err := checkSession(req)
+    _, claims, err := jwtauth.FromContext(req.Context())
     if err != nil {
-        res.WriteHeader(400)
         log.Println(err)
+        res.WriteHeader(500)
         return
     }
 
@@ -100,7 +100,7 @@ func readBookHandler(res http.ResponseWriter, req *http.Request) {
     }
 
     // Check if the user owns the book with the requested id
-    if !userOwnsBook(jwt.Username, id) {
+    if !userOwnsBook(claims["username"].(string), id) {
         res.WriteHeader(400)
         log.Println("No such book")
         return
@@ -120,11 +120,10 @@ func readBookHandler(res http.ResponseWriter, req *http.Request) {
 
 // uploadBookHandler responsds to requests to upload a book to the server
 func uploadBookHandler(res http.ResponseWriter, req *http.Request) {
-    // Check that user is logged in
-    jwt, err := checkSession(req)
+    _, claims, err := jwtauth.FromContext(req.Context())
     if err != nil {
-        res.WriteHeader(400)
         log.Println(err)
+        res.WriteHeader(500)
         return
     }
 
@@ -160,7 +159,7 @@ func uploadBookHandler(res http.ResponseWriter, req *http.Request) {
 
         _, err = usersCollection.UpdateOne(
             context.Background(),
-            bson.M{"username": jwt.Username},
+            bson.M{"username": claims["username"].(string)},
             bson.M{"$push": bson.M{"books": Book{Id: stream.FileID, Title: filename}}},
             options.Update().SetUpsert(true),
         )
@@ -177,11 +176,10 @@ func uploadBookHandler(res http.ResponseWriter, req *http.Request) {
 
 // downloadBookHandler sends a user a book to download
 func downloadBookHandler(res http.ResponseWriter, req *http.Request) {
-    // Check that the user is logged in
-    jwt, err := checkSession(req)
+    _, claims, err := jwtauth.FromContext(req.Context())
     if err != nil {
-        res.WriteHeader(400)
         log.Println(err)
+        res.WriteHeader(500)
         return
     }
   
@@ -195,7 +193,7 @@ func downloadBookHandler(res http.ResponseWriter, req *http.Request) {
     }
 
     // Check if the user owns the book
-    if !userOwnsBook(jwt.Username, id) {
+    if !userOwnsBook(claims["username"].(string), id) {
         res.WriteHeader(400)
         log.Println("No such book")
         return

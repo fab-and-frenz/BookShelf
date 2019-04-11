@@ -3,7 +3,7 @@ package main
 import(
     "github.com/go-chi/chi"
     "github.com/go-chi/chi/middleware"
-    //"github.com/go-chi/jwtauth"
+    "github.com/go-chi/jwtauth"
     "net/http"
     "log"
     "io/ioutil"
@@ -43,17 +43,26 @@ func main() {
     sr.Use(middleware.Logger)
     sr.Use(middleware.SetHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains"))
 
+    // Connect Unprotected Routes to their Handlers
     sr.Get ( "/html/",        htmlHandler         )
     sr.Get ( "/register",     registerPageHandler )
     sr.Post( "/registeruser", registerUserHandler )
     sr.Get ( "/login",        loginPageHandler    )
     sr.Post( "/loginuser",    loginUserHandler    )
-    sr.Get ( "/logout",       logoutHandler       )
-    sr.Get ( "/library",      libraryHandler      )
-    sr.Post( "/uploadbook",   uploadBookHandler   )
-    sr.Get ( "/downloadbook", downloadBookHandler )
-    sr.Get ( "/read",         readBookHandler     )
     sr.Get ( "/",             loginPageHandler    )
+
+    // Protected Routes that Require JWT authentication
+    // You must be logged in to access these routes
+    sr.Group(func(pr chi.Router) {
+        pr.Use(jwtauth.Verifier(tokenAuth))
+        pr.Use(jwtauth.Authenticator)
+
+        pr.Get ( "/logout",       logoutHandler       )
+        pr.Get ( "/library",      libraryHandler      )
+        pr.Post( "/uploadbook",   uploadBookHandler   )
+        pr.Get ( "/downloadbook", downloadBookHandler )
+        pr.Get ( "/read",         readBookHandler     )
+    })
 
     // Setup the HTTPS Server
     httpsServer := &http.Server {
